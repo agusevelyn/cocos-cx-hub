@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cocos CX Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--r:12px;--rs:8px;--rxl:18px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4fa;color:#1a1916;min-height:100vh;font-size:15px;line-height:1.6}
+.view{display:none}.view.active{display:block}
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a1628;padding:24px}
+.login-box{background:#fff;border-radius:var(--r);padding:40px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo .brand{font-size:26px;font-weight:900;color:#0a1628;letter-spacing:2px}
+.login-logo .lbl{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:#fff;background:#0a1628;border-radius:20px;padding:3px 10px;margin-left:4px}
+.login-logo p{font-size:13px;color:#888;margin-top:8px}
+.login-err{background:#fef2f2;border:0.5px solid #fecaca;color:#dc2626;font-size:13px;padding:10px 14px;border-radius:var(--rs);margin-bottom:14px;display:none}
+.login-btn{width:100%;padding:11px;background:#0a1628;color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px}
+.login-btn:hover{background:#152038}
+.lfl{margin-bottom:14px}
+.lfl label{display:block;font-size:13px;font-weight:500;margin-bottom:5px;color:#1a1916}
+.lfl input{width:100%;padding:9px 12px;border:1px solid #dde3ed;border-radius:var(--rs);font-size:14px;color:#1a1916;background:#f9fafb;outline:none;font-family:inherit}
+.lfl input:focus{border-color:#0a1628;background:#fff}
+/* NAV */
+nav{background:#0a1628;border-bottom:1px solid #152038;padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
+.nav-brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+.nav-lbl{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.12);border:0.5px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;margin-left:4px}
+.nav-right{display:flex;gap:6px;align-items:center}
+.nbtn{padding:6px 14px;border:0.5px solid rgba(255,255,255,.35);border-radius:var(--rs);font-size:13px;cursor:pointer;background:rgba(255,255,255,.08);color:#fff;font-weight:500;transition:all .15s}
+.nbtn:hover{background:rgba(255,255,255,.18)}
+.nbtn.on{background:#fff;border-color:#fff;color:#0a1628;font-weight:700}
+.nav-user{font-size:12px;color:rgba(255,255,255,.5);margin-right:4px}
+/* HERO */
+.hero{background:#0a1628;text-align:center;position:relative;overflow:visible}
+.hero-bg{position:relative;z-index:1;padding:60px 24px 52px}
+.hero-pat{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.hero h1{font-size:34px;font-weight:800;letter-spacing:-.8px;margin-bottom:10px;color:#fff;line-height:1.2}
+.hero h1 span{color:#7eb8f7}
+.hero p{color:rgba(255,255,255,.45);font-size:15px;margin-bottom:34px}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#7eb8f7;background:rgba(126,184,247,.1);border:0.5px solid rgba(126,184,247,.25);border-radius:20px;padding:5px 14px;margin-bottom:20px}
+.srch-wrap{max-width:580px;margin:0 auto;position:relative}
+.srch-wrap input{width:100%;padding:15px 20px 15px 50px;border:1px solid rgba(255,255,255,.12);border-radius:var(--rxl);font-size:15px;background:rgba(255,255,255,.07);color:#fff;outline:none;transition:border-color .2s}
+.srch-wrap input::placeholder{color:rgba(255,255,255,.3)}
+.srch-wrap input:focus{border-color:#7eb8f7;background:rgba(255,255,255,.1)}
+.s-ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.35);pointer-events:none}
+.s-ico svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.drop{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#fff;border:1px solid #e2e8f4;border-radius:14px;overflow:hidden;display:none;z-index:999;box-shadow:0 12px 32px rgba(0,0,0,.15)}
+.dr-item{padding:10px 16px;cursor:pointer;border-bottom:1px solid #f4f6fb;display:flex;align-items:center;gap:10px}
+.dr-item:last-of-type{border-bottom:none}
+.dr-item:hover{background:#f5f8ff}
+.dr-dot{display:none}
+.dr-left{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:#eef4ff}
+.dr-cat{font-size:10px;color:#7eb8f7;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:1px}
+.dr-title{font-size:13px;font-weight:600;color:#0a1628;line-height:1.3}
+.dr-snip{font-size:11px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.dr-empty{padding:20px;text-align:center;color:#888;font-size:14px}
+.dr-stats{padding:8px 16px;background:#f9fafb;border-top:1px solid #f0f4fa;font-size:11px;color:#aaa;text-align:center}
+/* CATS */
+.cats-wrap{background:#f0f4fa;padding:32px 24px 48px}
+.cats-inner{max-width:960px;margin:0 auto}
+.sec-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#888;margin-bottom:16px}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,140px);gap:14px}
+.cat-card{width:140px;height:140px;background:#fff;border:1.5px solid #dde3ed;border-radius:var(--r);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(10,22,40,.07);transition:transform .15s,box-shadow .2s,border-color .2s}
+.cat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(10,22,40,.14);border-color:#7eb8f7}
+.cat-top{position:absolute;top:0;left:0;right:0;height:4px}
+.cat-ico{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:9px}
+.cat-name{font-size:12px;font-weight:700;color:#0a1628;padding:0 8px;line-height:1.3;margin-bottom:3px}
+.cat-cnt{font-size:11px;color:#999}
+.cat-card.dragging{opacity:.35;transform:scale(.96)}
+.cat-card.drag-over{border-color:#7eb8f7;box-shadow:0 0 0 2px #bfdbfe}
+.reorder-hint{font-size:12px;color:#888;margin-bottom:12px;display:none}
+.reorder-hint.on{display:block}
+/* ARTICLE */
+.vhead{background:#fff;border-bottom:1px solid #e8edf5;padding:20px 28px}
+.crumb{display:flex;align-items:center;gap:6px;font-size:13px;color:#999;margin-bottom:12px}
+.crumb span{cursor:pointer}.crumb span:hover{color:#0a1628}
+.crumb-sep{color:#ccc}
+.vhead-inner{display:flex;align-items:center;gap:14px}
+.vhead-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.vhead h2{font-size:20px;font-weight:700;color:#0a1628}
+.vhead p{color:#888;font-size:13px;margin-top:2px}
+.art-list{max-width:720px;margin:20px auto;padding:0 24px}
+.art-item{background:#fff;border:1px solid #e8edf5;border-radius:var(--r);padding:16px 20px;margin-bottom:10px;cursor:pointer;transition:border-color .2s;display:flex;align-items:center;gap:12px}
+.art-item:hover{border-color:#7eb8f7}
+.ai-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ai-body{flex:1;min-width:0}
+.ai-body h3{font-size:14px;font-weight:600;color:#0a1628}
+.ai-chev{color:#ccc;flex-shrink:0;font-size:16px}
+.art-item:hover .ai-chev{color:#0a1628}
+.art-body{max-width:720px;margin:20px auto;padding:0 24px 56px}
+.art-body-wrap{max-width:1100px;margin:20px auto;padding:0 24px 56px;display:flex;gap:24px;align-items:flex-start}
+.art-toc{width:200px;flex-shrink:0;position:sticky;top:120px;background:#fff;border:1px solid #e8edf5;border-radius:var(--r);padding:14px;display:none;max-height:calc(100vh - 140px);overflow-y:auto}
+.art-toc.on{display:block}
+.art-toc-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#999;margin-bottom:10px}
+.art-toc a{display:block;font-size:12px;color:#555;text-decoration:none;padding:4px 8px;border-radius:6px;margin-bottom:2px;line-height:1.4;border-left:2px solid transparent;transition:all .15s}
+.art-toc a:hover{background:#f0f4fa;color:#0a1628;border-left-color:#7eb8f7}
+.art-toc a.active{background:#eef4ff;color:#0a1628;font-weight:600;border-left-color:#0a1628}
+.back-top{position:fixed;bottom:28px;right:28px;background:#0a1628;color:#fff;border:none;border-radius:50px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);display:none;z-index:99;transition:opacity .2s}
+.back-top.on{display:block}
+.acard{background:#fff;border:1px solid #e8edf5;border-radius:var(--r);overflow:hidden;flex:1;min-width:0}
+.ahead{padding:24px 28px;border-bottom:1px solid #e8edf5}
+.ahead-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+.ahead-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.ahead h1{font-size:19px;font-weight:700;line-height:1.4;color:#0a1628}
+.asec{padding:20px 28px;border-bottom:1px solid #e8edf5}
+.asec:last-child{border-bottom:none}
+.stitle{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#999;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.stitle-dot{width:6px;height:6px;border-radius:50%}
+.doc-body{font-size:14px;line-height:1.85;color:#1a1916}
+.doc-body h3{font-size:12px;font-weight:700;color:#0a1628;margin:16px 0 5px;text-transform:uppercase;letter-spacing:.5px}
+.doc-body h3:first-child{margin-top:0}
+.doc-body p{margin-bottom:10px}
+.doc-body p:last-child{margin-bottom:0}
+.doc-body strong{font-weight:600;color:#0a1628}
+.doc-body ol{margin:6px 0 12px 18px}
+.doc-body ol li{margin-bottom:5px}
+.doc-body ul{margin:6px 0 12px 18px;list-style:disc}
+.doc-body ul li{margin-bottom:3px}
+.resp-box{background:#f5f7fb;border:1px solid #e8edf5;border-radius:var(--rs);padding:16px 18px;font-size:14px;line-height:1.75;color:#1a1916;white-space:pre-wrap;font-family:inherit}
+.copy-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.copy-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:#0a1628;color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer}
+.copy-btn:hover{background:#152038}
+.copy-btn.ok{background:#16a34a}
+.copy-hint{font-size:12px;color:#999}
+.alert-box{display:flex;gap:10px;padding:12px 16px;border-radius:var(--rs);font-size:13px;margin-top:14px;line-height:1.6;align-items:flex-start}
+.alert-box.warn{background:#fffbeb;border:0.5px solid #fde68a;color:#b45309}
+.alert-box.info{background:#eef4ff;border:0.5px solid #bfdbfe;color:#1e40af}
+.alert-box.danger{background:#fef2f2;border:0.5px solid #fecaca;color:#dc2626}
+.vbtn{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:600;border-radius:8px;padding:7px 14px;border:1px solid}
+/* ADMIN */
+.admin-wrap{max-width:980px;margin:0 auto;padding:28px 24px}
+.admin-hd h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.admin-hd p{color:#888;font-size:14px;margin-bottom:24px}
+.atabs{display:flex;gap:4px;background:#e8edf5;border-radius:var(--rs);padding:4px;width:fit-content;margin-bottom:28px}
+.atab{padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;border-radius:6px;color:#666;border:none;background:transparent}
+.atab.on{background:#fff;color:#0a1628;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.atab-pane{display:none}.atab-pane.on{display:block}
+.admin-panel{background:#fff;border:1px solid #e8edf5;border-radius:var(--r);padding:24px;max-width:640px}
+.fl{margin-bottom:16px}
+.fl label{display:block;font-size:13px;font-weight:500;margin-bottom:5px;color:#1a1916}
+.fl input,.fl textarea,.fl select{width:100%;padding:9px 12px;border:1px solid #dde3ed;border-radius:var(--rs);font-size:14px;color:#1a1916;background:#f9fafb;outline:none;font-family:inherit}
+.fl input:focus,.fl textarea:focus,.fl select:focus{border-color:#0a1628;background:#fff}
+.fl textarea{resize:vertical;min-height:80px}
+.fl-hint{font-size:12px;color:#999;margin-top:4px}
+.btn-p{padding:9px 20px;background:#0a1628;color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer}
+.btn-p:hover{background:#152038}
+.btn-s{padding:9px 18px;background:transparent;color:#1a1916;border:1px solid #dde3ed;border-radius:var(--rs);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-s:hover{background:#f5f7fb}
+.art-ed-item{background:#fff;border:1px solid #e8edf5;border-radius:var(--r);padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.aei-t{font-size:14px;font-weight:600;color:#0a1628;margin-bottom:2px}
+.aei-m{font-size:12px;color:#999}
+.aei-btns{display:flex;gap:6px;flex-shrink:0}
+.btn-sm{padding:5px 12px;font-size:12px;font-weight:500;border-radius:var(--rs);cursor:pointer;border:1px solid #dde3ed;background:transparent;color:#666}
+.btn-sm:hover{background:#f5f7fb}
+.btn-sm.del{color:#dc2626;border-color:#fecaca}
+.btn-sm.del:hover{background:#fef2f2}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:#fff;border-radius:var(--r);padding:28px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:20px;color:#0a1628}
+.modal-ft{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #e8edf5}
+.cat-ed-row{background:#fff;border:1px solid #e8edf5;border-radius:var(--r);padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.cat-ed-fields{flex:1;display:flex;flex-direction:column;gap:6px}
+.cat-ed-fields input{padding:7px 10px;border:1px solid #dde3ed;border-radius:var(--rs);font-size:13px;color:#1a1916;background:#f9fafb;outline:none;font-family:inherit;width:100%}
+.cat-ed-fields input:first-child{font-weight:600;font-size:14px;color:#0a1628}
+.cat-ed-fields input:focus{border-color:#0a1628;background:#fff}
+/* EDITOR VISUAL */
+.editor-toolbar{display:flex;gap:4px;flex-wrap:wrap;padding:8px;background:#f5f7fb;border:1px solid #dde3ed;border-bottom:none;border-radius:var(--rs) var(--rs) 0 0;position:sticky;top:0;z-index:10}
+.editor-toolbar button{padding:5px 10px;font-size:12px;font-weight:600;border:1px solid #dde3ed;border-radius:6px;background:#fff;color:#1a1916;cursor:pointer;font-family:inherit}
+.editor-toolbar button:hover{background:#eef4ff;border-color:#7eb8f7}
+.editor-toolbar button.active{background:#0a1628;color:#fff;border-color:#0a1628}
+.editor-visual{border:1px solid #dde3ed;border-top:none;border-radius:0 0 var(--rs) var(--rs);min-height:200px;padding:12px;font-size:14px;line-height:1.85;color:#1a1916;outline:none;background:#fff;overflow-y:auto}
+.editor-visual:empty:before{content:attr(data-placeholder);color:#aaa}
+.editor-visual h3{font-size:12px;font-weight:700;color:#0a1628;margin:16px 0 5px;text-transform:uppercase;letter-spacing:.5px}
+.editor-visual h3:first-child{margin-top:0}
+.editor-visual strong{font-weight:600;color:#0a1628}
+.editor-visual ol{margin:6px 0 12px 18px}
+.editor-visual ul{margin:6px 0 12px 18px;list-style:disc}
+.editor-visual img{max-width:100%;border-radius:8px;border:1px solid #e8edf5;margin:8px 0;display:block}
+.user-ed-item{background:#fff;border:1px solid #e8edf5;border-radius:var(--r);padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.user-role{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:#eef4ff;color:#1e40af}
+.user-role.admin{background:#fef3c7;color:#92400e}
+/* NOTIFICACIONES */
+.notif-btn{position:relative;padding:6px 12px}
+.notif-badge{position:absolute;top:2px;right:2px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 5px;min-width:16px;text-align:center;line-height:1.4;display:none}
+.notif-badge.on{display:block}
+/* SUGERENCIAS */
+.sug-box{background:#f8faff;border:1px solid #e2e8f4;border-radius:var(--r);padding:20px 24px;margin-top:8px}
+.sug-box h4{font-size:13px;font-weight:700;color:#0a1628;margin-bottom:12px}
+.sug-textarea{width:100%;padding:10px 12px;border:1px solid #dde3ed;border-radius:var(--rs);font-size:13px;color:#1a1916;background:#fff;outline:none;font-family:inherit;resize:vertical;min-height:70px}
+.sug-textarea:focus{border-color:#0a1628}
+.sug-send{margin-top:8px;padding:8px 18px;background:#0a1628;color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer}
+.sug-send:hover{background:#152038}
+.sug-list{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.sug-item{background:#fff;border:1px solid #e8edf5;border-radius:var(--rs);padding:12px 14px;font-size:13px}
+.sug-item-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.sug-item-user{font-weight:600;color:#0a1628;font-size:12px}
+.sug-item-date{font-size:11px;color:#aaa}
+.sug-item-text{color:#1a1916;line-height:1.6}
+.sug-item-reply{margin-top:8px;padding:8px 10px;background:#f5f7fb;border-radius:6px;font-size:12px;color:#555;border-left:3px solid #7eb8f7}
+.sug-status{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.sug-status.pending{background:#fef3c7;color:#92400e}
+.sug-status.approved{background:#dcfce7;color:#15803d}
+.sug-status.rejected{background:#fee2e2;color:#dc2626}
+/* PANEL NOTIFICACIONES */
+.notif-wrap{max-width:720px;margin:28px auto;padding:0 24px 56px}
+.notif-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.notif-hd h2{font-size:18px;font-weight:700;color:#0a1628}
+.notif-card{background:#fff;border:1px solid #e8edf5;border-radius:var(--r);padding:18px 20px;margin-bottom:10px}
+.notif-card.unread{border-left:3px solid #7eb8f7}
+.notif-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+.notif-art{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#7eb8f7;margin-bottom:3px}
+.notif-user{font-size:13px;font-weight:600;color:#0a1628}
+.notif-date{font-size:11px;color:#aaa;flex-shrink:0}
+.notif-msg{font-size:13px;color:#555;line-height:1.6;margin-bottom:12px}
+.notif-actions{display:flex;gap:8px;align-items:center}
+.notif-reply-input{flex:1;padding:7px 10px;border:1px solid #dde3ed;border-radius:var(--rs);font-size:13px;outline:none;font-family:inherit}
+.notif-reply-input:focus{border-color:#0a1628}
+.btn-approve{padding:7px 14px;background:#16a34a;color:#fff;border:none;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer}
+.btn-approve:hover{background:#15803d}
+.btn-reject{padding:7px 14px;background:#dc2626;color:#fff;border:none;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer}
+.btn-reject:hover{background:#b91c1c}
+.notif-resolved{font-size:12px;color:#888;font-style:italic}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="view-login" class="view active">
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-logo">
+        <div><span class="brand">cocos</span><span class="lbl">CX Hub</span></div>
+        <p>Ingresá con tu cuenta para continuar</p>
+      </div>
+      <div class="login-err" id="login-err">Mail o contraseña incorrectos</div>
+      <div class="lfl"><label>Mail</label><input type="email" id="login-mail" placeholder="tu@cocos.capital" autocomplete="email"></div>
+      <div class="lfl"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="view-app" style="display:none">
+
+<nav>
+  <div class="nav-brand" onclick="goHome()">
+    <span style="font-size:18px;font-weight:900;color:#fff;letter-spacing:1.5px">cocos</span>
+    <span class="nav-lbl">CX Hub</span>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-user"></span>
+    <span id="sync-status" style="font-size:11px;color:rgba(255,255,255,.5);margin-right:4px"></span>
+    <button class="nbtn on" id="nav-kb" onclick="goHome()">Inicio</button>
+    <button class="nbtn notif-btn" id="nav-notif" onclick="goNotif()">🔔<span class="notif-badge" id="notif-badge"></span></button>
+    <button class="nbtn" id="nav-adm" onclick="goAdmin()" style="display:none">Admin</button>
+    <button class="nbtn" onclick="doLogout()" style="border-color:rgba(255,255,255,.2)">Salir</button>
+  </div>
+</nav>
+
+<div id="view-home" class="view active">
+  <div class="hero">
+    <div class="hero-pat"><svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="p" x="0" y="0" width="36" height="22" patternUnits="userSpaceOnUse"><text x="2" y="17" font-size="13" font-weight="900" fill="#fff" opacity="0.07">CX</text></pattern></defs><rect width="100%" height="100%" fill="url(#p)"/></svg></div>
+    <div class="hero-bg">
+      <div class="hero-eyebrow"><span style="width:6px;height:6px;border-radius:50%;background:#7eb8f7;display:inline-block"></span>Atencion al cliente</div>
+      <h1>¿En qué podemos<br><span>ayudarte?</span></h1>
+      <p>Busca por palabras clave o explora los temas principales</p>
+      <div class="srch-wrap">
+        <span class="s-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+        <input type="text" id="srch" placeholder="Ej: onboarding, MEP, tarjeta, PEP..." autocomplete="off">
+        <div class="drop" id="drop"></div>
+      </div>
+    </div>
+  </div>
+  <div class="cats-wrap"><div class="cats-inner">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="sec-lbl" style="margin-bottom:0">Categorias</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="reorder-hint" id="reorder-hint" style="margin-bottom:0">✦ Arrastrá para reordenar</span>
+        <button id="save-order-btn" onclick="saveUserOrder();this.textContent='✓ Guardado';this.style.display='none';" style="display:none;padding:6px 14px;background:#0a1628;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Guardar orden</button>
+      </div>
+    </div>
+    <div class="cat-grid" id="cat-grid"></div>
+  </div></div>
+</div>
+
+<div id="view-cat" class="view">
+  <div class="vhead">
+    <div class="crumb"><span onclick="goHome()">Inicio</span><span class="crumb-sep">›</span><span id="cv-crumb" style="color:#1a1916"></span></div>
+    <div class="vhead-inner"><div class="vhead-icon" id="cv-icon"></div><div style="flex:1"><h2 id="cv-title"></h2><p id="cv-desc"></p></div><button id="cv-add-btn" class="btn-p" style="display:none;font-size:13px;padding:7px 16px">+ Nuevo artículo</button></div>
+  </div>
+  <div class="art-list" id="art-list"></div>
+</div>
+
+<div id="view-art" class="view">
+  <div class="vhead">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;position:sticky;top:58px;z-index:50;background:#fff;padding:10px 0;border-bottom:1px solid #e8edf5;margin-left:-28px;margin-right:-28px;padding-left:28px;padding-right:28px">
+      <span class="vbtn" onclick="goBack()" style="color:#0a1628;background:#f0f4fa;border-color:#dde3ed" onmouseover="this.style.background='#e2e8f4'" onmouseout="this.style.background='#f0f4fa'">← Volver</span>
+      <span class="vbtn" id="btn-edit" onclick="editCurrentArt()" style="color:#4f46e5;background:#eef2ff;border-color:#c7d2fe;display:none" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'">✏ Editar</span>
+    </div>
+    <div class="crumb"><span onclick="goHome()">Inicio</span><span class="crumb-sep">›</span><span id="av-crumb" onclick="goBack()"></span><span class="crumb-sep">›</span><span id="av-art-crumb" style="color:#1a1916"></span></div>
+    <div class="vhead-inner"><div class="vhead-icon" id="av-icon"></div><div><h2 id="av-title"></h2></div></div>
+  </div>
+  <div class="art-body-wrap">
+    <div class="acard">
+      <div class="ahead"><div class="ahead-top"><div class="ahead-icon" id="a-icon"></div><div><h1 id="a-title"></h1><div id="a-updated" style="font-size:12px;color:#999;margin-top:4px"></div></div></div></div>
+      <div class="asec"><div id="a-alert"></div></div>
+      <div class="asec" id="a-content-sec"><div class="stitle"><div class="stitle-dot" style="background:#16a34a"></div>Informacion</div><div class="doc-body" id="a-content"></div></div>
+      <div class="asec" id="a-imgs-sec" style="display:none"><div class="stitle"><div class="stitle-dot" style="background:#e879f9"></div>Imagenes</div><div id="a-imgs"></div></div>
+      <div class="asec" id="a-resp-sec" style="display:none"><div class="resp-box" id="a-resp"></div></div>
+      <div class="asec" id="a-sug-sec">
+        <div class="stitle"><div class="stitle-dot" style="background:#f59e0b"></div>Sugerencias</div>
+        <div class="sug-box">
+          <h4>¿Algo desactualizado o para mejorar?</h4>
+          <textarea class="sug-textarea" id="sug-input" placeholder="Describí tu sugerencia..."></textarea>
+          <button class="sug-send" onclick="sendSuggestion()">Enviar sugerencia</button>
+          <div class="sug-list" id="sug-list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="art-toc" id="art-toc">
+      <div class="art-toc-title">En este artículo</div>
+      <div id="art-toc-links"></div>
+    </div>
+  </div>
+</div>
+
+<div id="view-admin" class="view">
+  <div class="admin-wrap">
+    <div class="admin-hd"><h2>Panel de administracion</h2><p>Gestiona el contenido y los usuarios</p></div>
+    <div class="atabs">
+      <button class="atab on" onclick="switchTab('articles')">Articulos</button>
+      <button class="atab" onclick="switchTab('cats')">Categorias</button>
+      <button class="atab" onclick="switchTab('users')">Usuarios</button>
+      <button class="atab" onclick="switchTab('export')">Backup</button>
+    </div>
+    <div class="atab-pane on" id="tab-articles">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:13px;color:#888" id="art-cnt"></span>
+        <button class="btn-p" onclick="openNew()">+ Nuevo articulo</button>
+      </div>
+      <input type="text" id="admin-srch" placeholder="Buscar articulo..." oninput="filterAdminList()" style="width:100%;padding:9px 12px;border:1px solid #dde3ed;border-radius:var(--rs);font-size:14px;color:#1a1916;background:#f9fafb;outline:none;margin-bottom:16px">
+      <div id="art-ed-list"></div>
+    </div>
+    <div class="atab-pane" id="tab-cats">
+      <div style="max-width:640px"><p style="font-size:13px;color:#888;margin-bottom:16px">Edita el nombre y descripcion de cada categoria.</p><div id="cat-ed-list"></div></div>
+    </div>
+    <div class="atab-pane" id="tab-users">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <span style="font-size:13px;color:#888" id="user-cnt"></span>
+        <button class="btn-p" onclick="openNewUser()">+ Nuevo usuario</button>
+      </div>
+      <div id="user-ed-list"></div>
+    </div>
+    <div class="atab-pane" id="tab-export">
+      <div class="admin-panel">
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:6px">Exportar y hacer backup</h3>
+        <p style="font-size:13px;color:#888;margin-bottom:20px">Descarga toda la base de conocimiento como JSON.</p>
+        <div style="display:flex;gap:10px">
+          <button class="btn-p" onclick="exportJSON()">Descargar JSON</button>
+          <button class="btn-s" onclick="document.getElementById('imp-file').click()">Importar JSON</button>
+          <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importJSON(this)">
+        </div>
+        <div id="exp-msg" style="margin-top:12px;font-size:13px;color:#16a34a;display:none">Descargado correctamente</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end view-app -->
+
+<button class="back-top" id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Subir</button>
+
+<!-- VISTA NOTIFICACIONES -->
+<div id="view-notif" class="view" style="display:none">
+  <div style="background:#fff;border-bottom:1px solid #e8edf5;padding:20px 28px">
+    <h2 id="notif-view-title" style="font-size:18px;font-weight:700;color:#0a1628"></h2>
+    <p id="notif-view-sub" style="font-size:13px;color:#888;margin-top:2px"></p>
+  </div>
+  <div class="notif-wrap" id="notif-list"></div>
+</div>
+
+<!-- MODAL ARTICULO -->
+<div class="modal-ov" id="modal" style="display:none">
+  <div class="modal">
+    <h3 id="modal-ttl">Nuevo articulo</h3>
+    <div class="fl"><label>Categoria</label><select id="ed-cat"></select></div>
+    <div class="fl"><label>Titulo</label><input type="text" id="ed-title" placeholder="Ej: Transferencia rechazada"></div>
+    <div class="fl"><label>Descripcion breve</label><textarea id="ed-desc" rows="2"></textarea></div>
+    <div class="fl">
+      <label>Alerta (opcional)</label>
+      <select id="ed-alt-type" style="padding:7px 10px;border:1px solid #dde3ed;border-radius:var(--rs);font-size:13px;background:#f9fafb;color:#1a1916;outline:none;width:100%;margin-bottom:6px">
+        <option value="">Sin alerta</option><option value="warn">Advertencia</option><option value="info">Informacion</option><option value="danger">Critico</option>
+      </select>
+      <input type="text" id="ed-alt-txt" placeholder="Texto de la alerta..." style="display:none">
+    </div>
+    <div class="fl">
+      <label>Contenido</label>
+      <div class="editor-toolbar">
+        <button type="button" onclick="edCmd('formatBlock','h3')" title="Título de sección">H</button>
+        <button type="button" onclick="edCmd('formatBlock','p')" title="Párrafo normal">P</button>
+        <button type="button" onclick="edCmd('bold')" title="Negrita"><b>B</b></button>
+        <button type="button" onclick="edInsertList('ol')" title="Lista numerada">1.</button>
+        <button type="button" onclick="edInsertList('ul')" title="Lista con viñetas">—</button>
+        <button type="button" onclick="edInsertImg()" title="Imagen">🖼</button>
+        <button type="button" onclick="edInsertLink()" title="Link">🔗</button>
+      </div>
+      <div id="ed-content" class="editor-visual" contenteditable="true" data-placeholder="Escribí el contenido acá..."></div>
+      <script>
+      document.getElementById('ed-content').addEventListener('keydown',function(e){
+        if(e.key==='Enter'&&!e.shiftKey){
+          e.preventDefault();
+          document.execCommand('insertParagraph',false,null);
+        }
+      });
+      </script>
+    </div>
+    <div class="fl"><label>Respuesta sugerida</label><textarea id="ed-resp" rows="4" placeholder="Hola [nombre], ..."></textarea></div>
+    <div class="modal-ft"><button class="btn-s" onclick="closeModal()">Cancelar</button><button class="btn-p" onclick="saveArt()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- MODAL USUARIO -->
+<div class="modal-ov" id="modal-user" style="display:none">
+  <div class="modal">
+    <h3 id="modal-user-ttl">Nuevo usuario</h3>
+    <div class="fl"><label>Nombre</label><input type="text" id="eu-name" placeholder="Ana García"></div>
+    <div class="fl"><label>Mail</label><input type="email" id="eu-mail" placeholder="ana@cocos.capital"></div>
+    <div class="fl"><label>Contraseña</label><input type="password" id="eu-pass" placeholder="Mínimo 6 caracteres"></div>
+    <div class="fl">
+      <label>Rol</label>
+      <select id="eu-role" style="padding:9px 12px;border:1px solid #dde3ed;border-radius:var(--rs);font-size:14px;background:#f9fafb;color:#1a1916;outline:none;width:100%">
+        <option value="user">Usuario — solo puede ver contenido</option>
+        <option value="admin">Admin — puede editar contenido y usuarios</option>
+      </select>
+    </div>
+    <div id="eu-err" style="font-size:13px;color:#dc2626;margin-top:-8px;margin-bottom:8px;display:none"></div>
+    <div class="modal-ft"><button class="btn-s" onclick="closeUserModal()">Cancelar</button><button class="btn-p" onclick="saveUser()">Guardar usuario</button></div>
+  </div>
+</div>
+
+<script>
+// ─── EDITOR HELPERS ──────────────────────────────────────
+
+// Convierte markdown a HTML para mostrar en el editor visual
+function markdownToHTML(text){
+  if(!text)return '';
+  var lines=text.split('\n'),html='',inOl=false,inUl=false;
+  lines.forEach(function(line){
+    var t=line.trim();
+    if(!t){
+      if(inOl){html+='</ol>';inOl=false;}
+      if(inUl){html+='</ul>';inUl=false;}
+      return;
+    }
+    if(t.startsWith('### ')){
+      if(inOl){html+='</ol>';inOl=false;}
+      if(inUl){html+='</ul>';inUl=false;}
+      html+='<h3>'+escHTML(t.slice(4))+'</h3>';
+      return;
+    }
+    var imgM=t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if(imgM){
+      if(inOl){html+='</ol>';inOl=false;}
+      if(inUl){html+='</ul>';inUl=false;}
+      html+='<img src="'+escHTML(imgM[2])+'" alt="'+escHTML(imgM[1])+'" style="max-width:100%;border-radius:8px;border:1px solid #e8edf5;margin:8px 0;display:block">';
+      return;
+    }
+    var olM=t.match(/^(\d+)\.\s+(.+)/);
+    if(olM){
+      if(inUl){html+='</ul>';inUl=false;}
+      if(!inOl){html+='<ol>';inOl=true;}
+      html+='<li>'+fmtInline(olM[2])+'</li>';
+      return;
+    }
+    if(t.startsWith('- ')){
+      if(inOl){html+='</ol>';inOl=false;}
+      if(!inUl){html+='<ul>';inUl=true;}
+      html+='<li>'+fmtInline(t.slice(2))+'</li>';
+      return;
+    }
+    if(inOl){html+='</ol>';inOl=false;}
+    if(inUl){html+='</ul>';inUl=false;}
+    html+='<p>'+fmtInline(t)+'</p>';
+  });
+  if(inOl)html+='</ol>';
+  if(inUl)html+='</ul>';
+  return html;
+}
+
+function escHTML(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmtInline(s){return escHTML(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');}
+
+// Convierte el HTML del editor de vuelta a markdown para guardar
+function editorToMarkdown(){
+  var el=document.getElementById('ed-content');
+  var result='';
+
+  function nodeToMd(node){
+    if(node.nodeType===3){
+      return node.textContent;
+    }
+    if(node.nodeType!==1)return '';
+    var tag=node.tagName.toLowerCase();
+    var inner=Array.from(node.childNodes).map(nodeToMd).join('');
+
+    if(tag==='h3')return '\n### '+inner.trim()+'\n';
+    if(tag==='strong'||tag==='b')return '**'+inner.trim()+'**';
+    if(tag==='a'){var href=node.getAttribute('href')||'';return '['+inner.trim()+']('+href+')';}
+    if(tag==='br')return '\n';
+    if(tag==='img'){var src=node.getAttribute('src')||'';var alt=node.getAttribute('alt')||'';return '\n!['+alt+']('+src+')\n';}
+    if(tag==='li'){
+      var parent=node.parentElement;
+      if(parent&&parent.tagName.toLowerCase()==='ol'){
+        var idx=Array.from(parent.children).indexOf(node)+1;
+        return idx+'. '+inner.trim()+'\n';
+      }
+      return '- '+inner.trim()+'\n';
+    }
+    if(tag==='ol'||tag==='ul')return '\n'+inner;
+    if(tag==='p'||tag==='div'){
+      var t=inner.trim();
+      if(!t||t==='\n')return '';
+      return t+'\n';
+    }
+    return inner;
+  }
+
+  result=Array.from(el.childNodes).map(nodeToMd).join('');
+  // Unir líneas de texto que pertenecen al mismo párrafo
+  // (líneas que no son títulos, listas ni imágenes)
+  var lines=result.split('\n');
+  var merged=[];
+  var buf='';
+  lines.forEach(function(line){
+    var t=line.trim();
+    var isSpecial=t.startsWith('### ')||t.startsWith('- ')||t.match(/^\d+\.\s/)||t.startsWith('![')||t==='';
+    if(isSpecial){
+      if(buf){merged.push(buf);buf='';}
+      merged.push(line);
+    } else {
+      if(buf){buf+=' '+t;}else{buf=t;}
+    }
+  });
+  if(buf)merged.push(buf);
+  return merged.join('\n').replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'').trim();
+}
+
+function edCmd(cmd,val){
+  document.getElementById('ed-content').focus();
+  document.execCommand(cmd,false,val||null);
+}
+
+function edInsertList(type){
+  document.getElementById('ed-content').focus();
+  document.execCommand(type==='ol'?'insertOrderedList':'insertUnorderedList',false,null);
+}
+
+function edInsertLink(){
+  var url=prompt('URL del link:');
+  if(!url)return;
+  var text=prompt('Texto a mostrar (dejá vacío para mostrar la URL):');
+  if(!text)text=url;
+  document.getElementById('ed-content').focus();
+  document.execCommand('insertHTML',false,'<a href="'+url+'" target="_blank" style="color:#0a1628;text-decoration:underline">'+text+'</a>');
+}
+
+function edInsertImg(){
+  if(!url)return;
+  document.getElementById('ed-content').focus();
+  document.execCommand('insertHTML',false,'<img src="'+url+'" style="max-width:100%;border-radius:8px;border:1px solid #e8edf5;margin:8px 0;display:block">');
+}
+
+// ─── GOOGLE SHEETS API ──────────────────────────────────
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbw4oSvrnMrj1imPnaWJFC2eFbYz1D0AhxjEgx7SyqCpUgSmLSbi0m5rhaCokIzMW7Aq/exec';
+
+function loadFromSheet(callback){
+  var status=document.getElementById('sync-status');
+  if(status)status.textContent='Cargando...';
+  var cbName='_sheetCb_'+Date.now();
+  var script=document.createElement('script');
+  var done=false;
+  var timeout=setTimeout(function(){
+    if(done)return;
+    done=true;
+    delete window[cbName];
+    if(script.parentNode)script.parentNode.removeChild(script);
+    console.log('Sheet: timeout (5s), usando datos del HTML');
+    if(status)status.textContent='';
+    if(callback)callback();
+  },5000);
+  window[cbName]=function(rows){
+    done=true;
+    clearTimeout(timeout);
+    delete window[cbName];
+    if(script.parentNode)script.parentNode.removeChild(script);
+    console.log('Sheet: recibidos '+((rows&&rows.length)||0)+' registros');
+    if(rows&&rows.length>0){
+      var tempCats=[];
+      DB.categories.forEach(function(c){
+        tempCats.push({id:c.id,name:c.name,icon:c.icon,color:c.color,iconBg:c.iconBg,desc:c.desc,articles:[]});
+      });
+      var asignados=0;
+      rows.forEach(function(row){
+        var cat=tempCats.find(function(c){return c.name===row.category;});
+        if(!cat){cat=tempCats.find(function(c){return c.id===row.category;});}
+        if(!cat&&row.category){
+          cat={id:'cat_'+Date.now()+'_'+Math.random().toString(36).slice(2),name:row.category,icon:'📁',color:'#6b7280',iconBg:'#f9fafb',desc:'',articles:[]};
+          tempCats.push(cat);
+        }
+        if(cat){
+          var ud=String(row.updatedAt||'');
+          if(ud.indexOf('T')>0)ud=ud.slice(0,10);
+          cat.articles.push({
+            id:row.id||('a'+Date.now()),
+            title:row.title||'',
+            desc:row.desc||'',
+            content:row.content||'',
+            response:row.response||'',
+            updatedAt:ud,
+            alert:(row.alertType&&row.alertText)?{type:row.alertType,text:row.alertText}:undefined
+          });
+          asignados++;
+        }
+      });
+      console.log('Sheet: '+asignados+' artículos asignados a categorías');
+      if(asignados>0){
+        DB.categories.forEach(function(cat){
+          var tc=tempCats.find(function(c){return c.id===cat.id||c.name===cat.name;});
+          if(tc)cat.articles=tc.articles;
+        });
+        tempCats.forEach(function(tc){
+          var exists=DB.categories.find(function(c){return c.id===tc.id||c.name===tc.name;});
+          if(!exists&&tc.articles.length>0)DB.categories.push(tc);
+        });
+        console.log('Sheet: datos aplicados OK');
+      }
+    }
+    if(status)status.textContent='';
+    if(callback)callback();
+  };
+  script.onerror=function(){
+    if(done)return;
+    done=true;
+    clearTimeout(timeout);
+    delete window[cbName];
+    console.log('Sheet: error de carga, usando datos del HTML');
+    if(status)status.textContent='';
+    if(callback)callback();
+  };
+  script.src=SCRIPT_URL+'?callback='+cbName;
+  document.head.appendChild(script);
+}
+
+function saveToSheet(){
+  var rows=[];
+  DB.categories.forEach(function(cat){
+    cat.articles.forEach(function(art){
+      rows.push({
+        id:art.id,
+        title:art.title,
+        category:cat.name,
+        desc:art.desc,
+        content:art.content||'',
+        response:art.response||'',
+        alertType:art.alert?art.alert.type:'',
+        alertText:art.alert?art.alert.text:'',
+        updatedAt:art.updatedAt||''
+      });
+    });
+  });
+  var status=document.getElementById('sync-status');
+  if(status)status.textContent='Guardando...';
+  fetch(SCRIPT_URL,{
+    method:'POST',
+    mode:'no-cors',
+    body:JSON.stringify({action:'save',rows:rows})
+  })
+  .then(function(){
+    if(status)status.textContent='✓ Guardado';
+    setTimeout(function(){if(status)status.textContent='';},2500);
+  })
+  .catch(function(){
+    if(status)status.textContent='Sin conexión';
+    setTimeout(function(){if(status)status.textContent='';},2500);
+  });
+}
+
+// ─── AUTH ────────────────────────────────────────────────
+var USERS_KEY='cx_users';
+var SESSION_KEY='cx_session';
+
+function getUsers(){
+  try{var u=localStorage.getItem(USERS_KEY);return u?JSON.parse(u):[];}catch(e){return [];}
+}
+function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
+function getSession(){
+  try{var s=localStorage.getItem(SESSION_KEY);return s?JSON.parse(s):null;}catch(e){return null;}
+}
+function setSession(u){localStorage.setItem(SESSION_KEY,JSON.stringify(u));}
+function clearSession(){localStorage.removeItem(SESSION_KEY);}
+
+var DEFAULT_ADMIN={id:'u1',name:'Admin',mail:'admin@cocos.capital',pass:'cocos2025',role:'admin'};
+
+function initUsers(){
+  var users=getUsers();
+  var hasAdmin=users.find(function(u){return u.id==='u1';});
+  if(!hasAdmin){users.unshift(DEFAULT_ADMIN);saveUsers(users);}
+}
+
+function doLogin(){
+  var mail=document.getElementById('login-mail').value.trim().toLowerCase();
+  var pass=document.getElementById('login-pass').value;
+  var users=getUsers();
+  var user=users.find(function(u){return u.mail.toLowerCase()===mail&&u.pass===pass;});
+  if(!user){document.getElementById('login-err').style.display='block';return;}
+  setSession({id:user.id,name:user.name,mail:user.mail,role:user.role});
+  startApp(user);
+}
+
+function doLogout(){
+  clearSession();
+  document.getElementById('view-app').style.display='none';
+  document.getElementById('view-login').classList.add('active');
+  document.getElementById('login-mail').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-err').style.display='none';
+}
+
+function startApp(user){
+  currentUser=user;
+  document.getElementById('view-login').classList.remove('active');
+  document.getElementById('view-app').style.display='block';
+  document.getElementById('nav-user').textContent=user.name;
+  document.getElementById('nav-adm').style.display=user.role==='admin'?'':'none';
+  document.getElementById('btn-edit').style.display=user.role==='admin'?'':'none';
+  loadFromSheet(function(){
+    renderHome();
+    showView('home');
+    updateNotifBadge();
+  });
+}
+
+// ─── CONTENT ────────────────────────────────────────────
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" style="color:#0a1628;text-decoration:underline">$1</a>');}
+function renderContent(text){
+  if(!text)return '';
+  var lines=text.split('\n'),html='',inOl=false,inUl=false;
+  lines.forEach(function(line){
+    var t=line.trim();
+    if(!t){return;}
+    if(t.startsWith('### ')){
+      if(inOl){html+='</ol>';inOl=false;}
+      if(inUl){html+='</ul>';inUl=false;}
+      html+='<h3>'+esc(t.slice(4))+'</h3>';return;
+    }
+    var imgM=t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if(imgM){
+      var imgTag='<img src="'+esc(imgM[2])+'" alt="'+esc(imgM[1])+'" style="max-width:100%;border-radius:8px;border:1px solid #e8edf5;display:block;margin:8px 0" onerror="this.parentNode.style.display=\'none\'">';
+      if(inOl||inUl){html=html.replace(/<\/li>$/,''+imgTag+'</li>');}
+      else{html+='<div style="margin:12px 0">'+imgTag+'</div>';}
+      return;
+    }
+    var olM=t.match(/^(\d+)\.\s+(.+)/);
+    if(olM){
+      if(inUl){html+='</ul>';inUl=false;}
+      if(!inOl){html+='<ol>';inOl=true;}
+      html+='<li>'+fmt(olM[2])+'</li>';return;
+    }
+    if(t.startsWith('- ')){
+      if(inOl){html+='</ol>';inOl=false;}
+      if(!inUl){html+='<ul>';inUl=true;}
+      html+='<li>'+fmt(t.slice(2))+'</li>';return;
+    }
+    if(inOl){html+='</ol>';inOl=false;}
+    if(inUl){html+='</ul>';inUl=false;}
+    html+='<p>'+fmt(t)+'</p>';
+  });
+  if(inOl)html+='</ol>';
+  if(inUl)html+='</ul>';
+  return html;
+}
+
+var DB={"categories": [{"id": "empresa", "name": "La empresa", "icon": "🥥", "color": "#0a1628", "iconBg": "#e8edf5", "desc": "Vision, mision y estructura interna", "articles": [{"id": "emp1", "title": "Sobre Cocos Capital", "desc": "Visión, misión, domicilio y estructura interna.", "content": "### Visión\nEn Cocos creemos que invertir es para todos. Es por eso que brindamos soluciones de inversiones basadas en la tecnología y centradas en el usuario y en la educación financiera. A través de la tecnología y la educación como medios para la inclusión, vamos a lograr democratizar el acceso al mundo de las\ninversiones para que todos puedan proteger sus ahorros, hacer crecer su patrimonio y lograr la libertad financiera que merecen.\n\n### Misión\nCocos nace en el 2021 con la misión de lograr que TODOS puedan invertir y alcanzar así la independencia financiera. A través de una experiencia 100% digital y ágil, revolucionamos el mercado financiero ofreciendo simpleza, velocidad y un esquema totalmente disruptivo de CERO COMISIONES a los usuarios. ¡En\nCocos el cliente está en el centro y lo queremos acompañar en el día a día ayudándolo/a a lograr sus objetivos!\n\n- **Domicilio legal: Av Libertador 602  Piso 3, CABA**\n\n### Front Office\nEl concepto de front office abarca aquellas estructuras empresariales encargadas de interactuar directamente con\nel cliente. Los procesos organizacionales característicos del front office tienen en común la característica principal\nde basarse en el trato con el cliente. Asi en el caso de Cocos, forman parte del front office la mesa de operaciones,\nel equipo de ventas, el de marketing y por supuesto atención al cliente.\n\n- Es la parte más enfocada al cliente dentro de la estructura así como de la satisfacción de sus necesidades con bienes y servicios.\n\n- Aporta una visión directa de la marca o la compañía hacia el exterior, ya que es la cara visible e inmediata de la misma.\n\n- El  ámbito de la atención al cliente es protagonista en este marco también, al basarse en el contacto directo con agentes externos.\n\n### Back Office\nEs el sector que se ocupa del conjunto de actividades de tipo administrativo y financiero de la empresa, y que no son vistas por el cliente.\nDebe hacer labores de reconciliación con las centrales de custodia y los bancos; por ejemplo, el manejo de las API\nInterfaz de Programación de Aplicaciones) que hoy día están utilizando las entidades financieras. Además, se encarga de conciliar todos los movimientos que se presentan.\nOtra de las funciones consiste en armar todos los reportes para cumplir con los diferentes reguladores; por ejemplo, la Comisión Nacional de Valores CNV) y la Administración Federal de Ingresos Públicos AFIP, en Argentina. Esto último se realiza en el área de Administración y Compliance, más específicamente.\nPara completar el ciclo, están las operaciones en Post-Trade que se dan al cierre de los mercados que competen al registro final de las órdenes ejecutadas y, para funcionar toda la maquinaria, participan los departamentos de IT/Sistemas que mantienen activo todo el proceso de digitalización.", "response": "Hola! Cocos Capital es una investech argentina fundada en 2021, ALyC N°688 ante la CNV.\n\nDomicilio legal: Av. Libertador 602, Piso 3, CABA.", "updatedAt": "2025-03-13"}]}, {"id": "cuenta", "name": "Alta de cuenta", "icon": "dni", "color": "#0891b2", "iconBg": "#ecfeff", "desc": "Requisitos, onboarding y apertura de cuenta", "articles": [{"id": "cu0", "title": "Requisitos para abrir cuenta", "updatedAt": "2025-03-29", "desc": "Qué necesita el cliente para abrir una cuenta comitente en Cocos.", "alert": {"type": "warn", "text": "Si ya tuvo cuenta en Cocos y solicitó el cierre, NO podrá abrir una nueva por el momento. Registrar como: Solicitud - Reapertura."}, "content": "### Persona física\nNecesita ciudadanía argentina (DNI + CUIT/CUIL) y ser mayor de 18 años. Si está en el exterior puede abrir cuenta siempre que tenga ciudadanía argentina y la app esté disponible en el Play Store de su país.\n\n### Persona jurídica\nDebe estar registrada ante organismos públicos con documentación legal y contable actualizada. Derivar a business@cocos.capital.", "response": "Hola [nombre], para abrir una cuenta comitente en Cocos necesitás ciudadanía argentina (DNI y CUIT/CUIL) y ser mayor de 18 años.\n\nEstamos a tu disposición!"}, {"id": "cu1", "title": "Nuevo OB - flujo del cliente", "updatedAt": "2025-03-29", "desc": "Paso a paso del onboarding para apertura de cuenta comitente.", "content": "### Pasos del onboarding\n1. Crear cuenta con mail y contraseña (mín. 8 caracteres, mayúsculas, minúsculas, número y símbolo).\n2. Validar el mail clickeando el link que llega al correo.\n3. Ingresar teléfono con prefijo del país.\n4. En la app tocar \"Abrir cuenta comitente\" y aceptar TyC.\n5. Subir foto del frente y dorso del DNI, luego selfie.\n6. Si las fotos no se validan automáticamente: ingresar CUIT/CUIL, sexo y número de trámite del DNI.\n7. Responder 3 preguntas: residencia en Argentina, estado civil, si es US person/FATCA.\n\n### Pantallas finales posibles\n**Verificación en proceso** (reloj amarillo): OB en curso. **Verificación OK**: ya puede operar. **Revisá tu mail**: se envió un requerimiento. **Rechazado**: ver motivo en Complif.", "response": "Hola [nombre], para abrir tu cuenta descargá la app, creá tu usuario y seguí los pasos del onboarding. Ante cualquier inconveniente no dudes en escribirnos."}, {"id": "cu2", "title": "Cliente con dos cuentas comitentes", "updatedAt": "2025-03-29", "desc": "El cliente tiene dos cuentas asociadas al mismo mail.", "content": "Verificar en Complif que el mail tiene dos cuentas comitentes asociadas.\n\n### Cómo proceder\n1. Derivar por Intercom a Compliance para confirmar cuál es la cuenta vigente.\n2. Una vez confirmada, derivar a Títulos para que actualicen los saldos.\n3. Informar al cliente que el caso fue escalado.", "response": "Hola [nombre], detectamos una situación con tu cuenta que requiere revisión interna. Ya derivamos el caso. Te contactamos en cuanto tengamos novedades."}, {"id": "cu3", "title": "Problemas con validación de teléfono", "updatedAt": "2025-03-29", "desc": "El cliente no puede validar su número durante el onboarding o en la app.", "content": "### Verificaciones previas\nConfirmar que el número sea válido en https://robotvalidator.vercel.app/ y que el cliente tenga los TYC de WhatsApp actualizados (https://api.whatsapp.com/tos/20210210/). Verificar también que el número no esté asociado a otra comitente en Retool.\n\n### Si todo está OK\nPedirle que agende el número **+54 9 11 6354-7221** y luego solicite el código nuevamente desde la app.\n\n### Formato correcto del teléfono\nEn Complif y Retool NO debe tener el signo + ni el número 9. Formato correcto: 541112345678.", "response": "Hola [nombre], para validar tu teléfono agendá el número +54 9 11 6354-7221 en tus contactos y luego solicitá el código nuevamente desde la app."}, {"id": "cu4", "title": "Cliente no finalizó el onboarding", "updatedAt": "2025-03-29", "desc": "El cliente dejó el OB a la mitad o quiere darlo de baja.", "alert": {"type": "warn", "text": "VITAL: Verificar en Complif (Solapa Personas, búsqueda por CUIT) que el OB no tenga más de un trámite iniciado en simultáneo."}, "content": "Un OB dejado a la mitad puede retomarse desde la app. Si hay más de un OB, solo el último puede estar aprobado o in progress; los anteriores deben estar rechazados.\n\n### Si el cliente quiere dar de baja el OB\nTipificar como Solicitud > Baja en proceso de alta. Si hay requerimientos pendientes derivar a Compliance. Si está pendiente sin requerimientos, pedir que elimine la app; el trámite cae solo por inactividad a los 10 días.", "response": "Hola! No identifico una cuenta comitente registrada con este correo, lo que sí visualizo es un trámite de apertura en curso. En caso de que no quieras continuar, lamento tu decisión.\n\nCon que elimines la app y canceles la suscripción de los mails sería suficiente."}]}, {"id": "modificaciones", "name": "Modificaciones", "icon": "✏️", "color": "#0891b2", "iconBg": "#ecfeff", "desc": "Cambios de datos, cierres y seguridad de cuenta", "articles": [{"id": "mod1", "title": "Cambio de mail", "updatedAt": "2025-03-29", "desc": "El cliente solicita cambiar el correo electrónico registrado.", "content": "El cliente debe escribir desde la casilla asociada a la cuenta, o tener el número de comitente si perdió acceso.\n\n### Proceso\n1. Enviar requerimiento \"Cambio de mail\" desde Complif al mail operativo del cliente.\n2. El cliente graba un video selfie con DNI en mano diciendo: nombre completo, número de DNI, fecha de nacimiento y \"Quiero cambiar mi correo a [nuevo mail]\".\n3. Una vez aprobado se carga en la planilla de validaciones y en el Board CX-Compliance-OPS.", "response": "Hola [nombre], para gestionar el cambio de correo necesitamos que valides tu identidad. Te enviamos un requerimiento por mail con los pasos a seguir."}, {"id": "mod2", "title": "Cambio de teléfono", "updatedAt": "2025-03-29", "desc": "El cliente solicita modificar el número de teléfono registrado.", "content": "Confirmar que el cliente escriba desde el mail registrado y que efectivamente precise el cambio.\n\n### Formato correcto\nEn Complif y Retool NO debe tener + ni el número 9. Correcto: 541112345678.\n\n### Proceso\n1. Enviar requerimiento desde Complif (plantilla: Actualización teléfono legajo).\n2. Luego de 48hs verificar en la planilla de validaciones que el cambio se procesó.", "response": "Hola [nombre], para gestionar el cambio de teléfono te enviamos un requerimiento por mail. Por favor revisalo y completalo."}, {"id": "mod3", "title": "Reset Google Authenticator (2FA)", "updatedAt": "2025-03-29", "desc": "El cliente no puede acceder a su Google Authenticator.", "content": "Confirmar que escriba desde el correo registrado y que tenga 2FA activo en Retool.\n\n### Proceso\n1. Enviar macro Reset GA PARTE UNO. Dejar en pospuesto.\n2. Enviar macro Reset GA PARTE DOS.\n3. Enviar requerimiento \"Reset de Google Authenticator\" desde Complif.\n4. Solicitar en paralelo el Reset desde Retool > pestaña Cuenta.", "response": "Hola [nombre], para resetear tu Google Authenticator necesitamos verificar tu identidad. Te enviamos las instrucciones por mail."}, {"id": "mod7", "title": "Cierre de cuenta", "updatedAt": "2025-03-29", "desc": "Proceso para dar de baja una cuenta comitente.", "alert": {"type": "warn", "text": "NO se puede dar de baja la tarjeta si está pausada (BLOCKED). El cliente debe presionar REANUDAR primero."}, "content": "Confirmar que escriba desde el mail registrado. Enviar macro según el motivo.\n\n### Verificación de saldo\nRevisar poder de compra (ARS, USD, EXT) y tenencia. Si tiene activos, indicar que los liquide o transfiera primero. Saldo menor a 1 USD: derivar directo a Compliance. FCI: pedir a Back Office que liquide.\n\n### Derivación\nCon la cuenta en cero, derivar a Compliance via Intercom con escalamiento \"Baja de cuenta\".", "response": "Hola [nombre], lamentamos tu decisión. Para procesar el cierre necesitamos que la cuenta no tenga saldo ni activos."}, {"id": "mod8", "title": "Hackeo, robo y banneo", "updatedAt": "2025-03-29", "desc": "Cómo actuar ante cuentas comprometidas.", "alert": {"type": "danger", "text": "Ante hackeo o fallecimiento del titular: bloquear la cuenta de inmediato y derivar a Compliance."}, "content": "### Hackeo\nSugerir cambio de contraseña. Bloquear desde Retool > Cuenta > Bloquear. Disparar requerimiento \"FRA - Validación de identidad por bloqueo\" desde Complif. Derivar a Compliance asignando a Florencia Vallejos.\n\n### Robo de celular\nBloquear cuenta desde Retool inmediatamente. Enviar requerimiento \"Validación de identidad por bloqueo\" desde Complif. Plazo: 5 días hábiles.\n\n### Banneo\nOcurre cuando el cliente ingresa varias veces el código de autenticación. Ver fecha de fin en Retool > Ver info cuenta > \"Banned until\". Si no hay fecha, derivar a Compliance.\n\n### Después de cualquier bloqueo\nRegistrar en planilla Bloqueos phishing.xlsx.", "response": "Hola [nombre], por seguridad bloqueamos tu cuenta de inmediato. Te contactaremos a la brevedad."}]}, {"id": "clientes", "name": "Tipos de clientes", "icon": "👥", "color": "#7c3aed", "iconBg": "#f3f0ff", "desc": "Retail, Gold, Pro, Business y AFI", "articles": [{"id": "cli1", "title": "Clientes Retail (Free)", "updatedAt": "2025-03-29", "desc": "Clientes que operan por su cuenta en la app sin pagar comisiones.", "content": "Operan en la app móvil sin pagar comisiones. En Retool aparecen como **TIER: FREE**. Todos tienen acceso al programa Junta Cocos.\n\nPara nuevos inversores: mostrar material de Cocos Academy. Para experimentados: acompañar para que hagan upgrade o conozcan operaciones de categorías superiores.", "response": "Hola [nombre], desde Cocos podés invertir sin comisiones directamente desde la app. Estamos acá para ayudarte."}, {"id": "cli2", "title": "Clientes Cocos Gold", "updatedAt": "2025-03-29", "desc": "Grandes clientes que invierten arriba de $10 millones.", "content": "Invierten arriba de $10 millones. Pueden operar futuros y lanzamiento descubierto de opciones. Cuando escriben a atencion@cocos.capital, darles **prioridad**.\n\nMail de contacto: **cocosgold@cocos.capital**.\n\n### Asesores Gold\nIan Colombo +54 9 11 35877621 · Rocco Abalsamo +5491154832710 · Damian Palais +54 9 11 58154636 · Felix Marenco +54 9 11 57467217 · Sophia Bresler +54 9 11 28825329 · Nina Waksman +54 9 11 59315506 · Nicolás Cabot +54 9 11 31946748 · Agustina Savoia +54911 23531823.", "response": "Hola [nombre], como cliente Cocos Gold tenés atención prioritaria. Voy a derivar tu consulta al área correspondiente."}, {"id": "cli3", "title": "Clientes Cocos Pro", "updatedAt": "2025-03-29", "desc": "Clientes dedicados al trading que operan a través de Matriz (DMA).", "content": "Operan a través de Matriz (DMA). **Los clientes PRO NO DEBEN estar habilitados en la App para operar.**\n\n### Planes\n**PRO LITE** USD 149+IVA/mes: sin descubierto, con caución, límite $100M/día.\n**PRO** USD 299+IVA/mes: descubierto del 100% de la cartera a 24/48hs (máximo $30M).\n**PROMAX 1 al 8**: para perfiles que operen a diario.\n\n### Gestión\nAlta y baja por mail a **cocospro@cocos.capital**, avisando una semana antes del fin de mes para la baja.", "response": "Hola [nombre], para consultas sobre tu plan Pro o gestionar el alta/baja, escribinos a cocospro@cocos.capital."}, {"id": "cli4", "title": "Clientes Business", "updatedAt": "2025-03-29", "desc": "Segmento para personas jurídicas con asesoramiento personalizado.", "content": "Personas jurídicas con asesoramiento personalizado. Las personas jurídicas **NO pueden operar FCI Clase A**, deben operar el Clase B.\n\nMail: **business@cocos.capital**.", "response": "Hola [nombre], para consultas sobre cuentas corporativas, voy a derivar tu caso al equipo de business@cocos.capital."}, {"id": "cli5", "title": "Cocos AFI", "updatedAt": "2025-03-29", "desc": "Asesores Financieros Independientes.", "content": "Un AFI es toda persona que brinda asesoramiento financiero a un tercero. Debe tener el examen de idoneidad aprobado.\n\n### Tipos\n**Referenciador**: solo examen de idoneidad, NO puede mencionar que trabaja con Cocos. **Agente productor**: tiene matrícula y puede mencionarlo.\n\n### Si llega un mail de un cliente de un AFI\nVerificar en Retool. Si está catalogado como AFI, derivar directamente con su asesor. **NO pasar por encima del AFI**.\n\nMail: **afi@cocos.capital**.", "response": "Hola [nombre], para consultas sobre el programa AFI podés contactarte a afi@cocos.capital."}]}, {"id": "rol_cx", "name": "Rol CX", "icon": "🎯", "color": "#059669", "iconBg": "#ecfdf5", "desc": "Alcance, tono, tickets y derivaciones", "articles": [{"id": "cx2", "title": "Alcance - qué SÍ y qué NO hacemos", "updatedAt": "2025-03-29", "desc": "Límites del equipo CX.", "alert": {"type": "danger", "text": "NO brindamos asesoramiento financiero, legal ni impositivo bajo ninguna circunstancia."}, "content": "### Qué SÍ hacemos\nAyudamos con la usabilidad de la app: ingresos, egresos, operaciones y funcionalidades.\n\n### Qué NO hacemos\nNo brindamos asesoramiento financiero, legal ni impositivo. No indicamos procesos externos a Cocos.\n\n### Cuando el problema depende de un tercero\nPedirle al cliente que lo averigüe con los responsables externos y brindar contención.", "response": "Hola [nombre], desde Cocos podemos ayudarte con todo lo relacionado a la operatoria dentro de nuestra plataforma."}, {"id": "cx3", "title": "Tono y estilo de comunicación", "updatedAt": "2025-03-29", "desc": "Simple, descontracturado pero profesional, cálido y conciso.", "content": "Tono simple, descontracturado pero profesional, cálido y empático. Tutear al cliente salvo que pida otro trato. Llamarlo por nombre o apodo.\n\n### Evitar imperativos\nEn lugar de \"Entrá a...\" usar \"Te sugiero...\", \"Te invito a ingresar...\", \"¿Podrías probar...?\"\n\n### Primera persona\nUsar siempre la primera persona del singular. Evitar repetir la misma fórmula en todos los mensajes.", "response": "Hola [nombre], ¿cómo estás? Antes que nada, muchas gracias por contactarnos. Estoy acá para ayudarte."}, {"id": "cx4", "title": "Estados de tickets y plazos", "updatedAt": "2025-03-29", "desc": "La atención se gestiona a través de Intercom.", "content": "### Estados\n**Abiertos**: asignados a un agente. **Pendientes**: requieren respuesta del cliente; revisar a las 24hs. **En espera**: requieren resolución interna. **Resueltos**: se resolvió o pasaron 24hs sin respuesta.\n\n### Asunto del email\nSiempre: **Nro de comitente - Inconveniente o necesidad**.\n\n### Plazos de reclamo interno\nTesorería 48hs hábiles · Transferencia de títulos 5 días · IT 72hs · Modificaciones 5 días.", "response": "Hola [nombre], ya tomamos tu caso. Te informamos en cuanto tengamos novedades. Gracias por tu paciencia!"}, {"id": "cx5", "title": "Macros y plazos al cliente", "updatedAt": "2025-03-29", "desc": "Uso correcto de macros Google y CSAT.", "content": "### Macro Google\nNO se envía en Transferencia de Títulos, Cierre de cuenta ni Crypto.\n\n### Macro CSAT\nDebe enviarse en TODOS los casos excepto Transferencia de títulos, Cierre de cuenta y Denuncias. No enviarla es **Error Crítico para QA**.\n\n### Plazos a informar al cliente\nNC: 7 días hábiles · Asociación de cuentas: 14 días · Actualización de datos: 14 días · Transferencias: 48hs · Transferencia de títulos: 15 días · Rechazo de transferencia de terceros: 15 días.", "response": "Hola [nombre], ¿cómo estás?\n\nGracias por contactarte con Cocos. [Resolver consulta aquí]"}, {"id": "cx7", "title": "Derivación a otras áreas", "updatedAt": "2025-03-29", "desc": "A dónde derivar cada tipo de caso.", "content": "### A Títulos\nDividendos, FCI, Transferencias de títulos, Auditorías, Certificado de Retención/Percepción, Asambleas.\n\n### A Tesorería\nIngresos, Ajustes de saldos, Egresos manuales, Rechazos, Comprobantes.\n\n### A Compliance\nModificaciones de datos, bloqueos, cierres, cambios de CUIT, documentación patrimonial.\n\n### A Business\nCasos de cuentas jurídicas. Copiar siempre a business@cocos.capital.", "response": "Hola [nombre], voy a derivar tu caso al área especializada. Te avisamos en cuanto tengamos novedades."}]}, {"id": "operaciones", "name": "Operaciones", "icon": "📈", "color": "#4f46e5", "iconBg": "#eef2ff", "desc": "Instrumentos, comisiones y operaciones de mercado", "articles": [{"id": "op1", "title": "Dólar MEP", "updatedAt": "2025-03-29", "desc": "Compra y venta de dólar MEP desde la app.", "content": "El dólar MEP surge de la compra de bonos en pesos y su posterior venta en USD luego del parking de 24hs. Opera de 11 a 17hs en días de mercado.\n\n### Tipos de MEP\n**MEP Estimado**: el bot compra AL30 en pesos y vende contra dólares pasadas 24hs. Mínimo 50 USD. Tiene comisiones. **MEP Asegurado**: tipo de cambio fijo asegurado por Cocos. Sin comisiones.\n\n### Cómo saber si la orden fue del cliente o de mesa\nEn Retool > Órdenes históricas: **id_application** completo = fue la mesa. **id_user** completo = fue el cliente.", "response": "Hola [nombre], el dólar MEP se puede operar desde la app entre las 11 y las 17hs en días de mercado."}, {"id": "op3", "title": "FCI - Fondos Comunes de Inversión", "updatedAt": "2025-03-29", "desc": "Suscripción y rescate de fondos desde la app.", "content": "Los FCI se suscriben entre las 11 y 14hs. Órdenes posteriores ingresan al día siguiente. Las personas jurídicas **NO pueden operar FCI Clase A**, deben operar el Clase B.\n\nEl Cocos Rendimiento FCI se visualiza en Caja de Valores como **FCI ALAMERICA RENTA MIXTA**.\n\n### Transferencia GC1\nPara evitar el impuesto a créditos y débitos, instruir al banco una transferencia GC1 a CBU 3220001805007068420035, Alias PUERTA.LOMA.LIMITE.", "response": "Hola [nombre], los FCI se pueden suscribir o rescatar desde la app en Mercado > Fondos, entre las 11 y las 14hs."}, {"id": "op4", "title": "Cauciones", "updatedAt": "2025-03-29", "desc": "Las cauciones son el plazo fijo del mercado bursátil.", "content": "Operan entre las 11 y las 17hs en pesos argentinos. La tasa es de mercado y **NO se puede modificar**. Mínimo $10.000. Solo se operan cauciones **COLOCADORAS**.\n\n### Operatoria\nMercado > Caución > Cargar importe y plazo > Confirmar.\n\n### Importante\nNo está permitido caucionar fondos y luego operar con esos mismos fondos antes de que liquiden.", "response": "Hola [nombre], las cauciones en Cocos se operan entre las 11 y las 17hs, solo cauciones COLOCADORAS. Mínimo $10.000 en pesos."}, {"id": "op5", "title": "Comisiones y tarifario", "updatedAt": "2025-03-29", "desc": "Tarifario vigente en https://cocos.capital/tarifario", "content": "Tarifario vigente: **https://cocos.capital/tarifario**.\n\n### Cómo verificar comisiones en Retool\nÓrdenes históricas > columnas: **Ext code BOLETO**, **Comisión** e **Importe de comisión**.\n\n### Comisiones cobradas indebidamente\nSolicitar número de boleto y fecha. Verificar en el tarifario. Cargar en planilla Notas de Crédito CX.xlsx.", "response": "Hola [nombre], podés consultar el tarifario en https://cocos.capital/tarifario"}, {"id": "op6", "title": "Transferencia de títulos", "updatedAt": "2025-03-29", "desc": "Transferencia de activos entre cuentas o agentes.", "content": "**No se ejecutan transferencias de CABLE, PESOS, USD ni FCI.**\n\n### Para recibir desde otro agente\nDepositante en Caja de Valores: **265** · Comitente: número del cliente · Email: titulos@cocos.capital.\n\n### Para enviar desde Cocos\n1. Enviar el formulario al cliente para que lo complete y firme.\n2. Verificar que esté completo y sin saldos negativos.\n3. Derivar a Títulos por Intercom con escalamiento \"Transferencia de títulos\".\n\nComisión de egreso: $10.000. Los clientes Free **no pueden transferir al exterior**.", "response": "Hola [nombre], para transferir tus títulos desde Cocos necesitamos que completes el formulario de transferencia firmado desde tu mail registrado."}, {"id": "op7", "title": "Horarios de mercado", "updatedAt": "2025-03-29", "desc": "Horarios de operación por tipo de instrumento.", "content": "- Contado inmediato (CI): 11hs a 16:30hs\n- 24hs: 11hs a 17hs\n- Cauciones: 10:30hs a 17hs\n- Futuros y opciones: 11hs a 15hs (solo Gold)\n- FCI: 11hs a 14hs (algunos hasta 15, 16 o 17hs)\n- Dólar MEP: 11hs a 17hs\n- Dólar Oficial: 4hs a 20hs\n- Crypto: 24/7", "response": "Hola [nombre], los horarios de mercado en Cocos son:\n- Contado inmediato: 11 a 16:30hs\n- 24hs: 11 a 17hs\n- FCI: 11 a 14hs\n- Dólar MEP: 11 a 17hs"}]}, {"id": "transferencias", "name": "Transferencias", "icon": "💸", "color": "#4f46e5", "iconBg": "#eef2ff", "desc": "Ingresos, egresos y rechazos de fondos", "articles": [{"id": "t1", "title": "Ingreso de fondos - datos y plazos", "updatedAt": "2025-03-29", "desc": "Plazo habitual: 48hs hábiles. Solo desde cuentas del mismo titular.", "content": "### Cuentas en Pesos\nBIND: CBU 3220001805007068420011 · Alias COCOS.CAPITAL\nCOINAG: CBU 4310009943800000068586 · Alias COCOS.CAP\n\n### Cuentas en USD MEP\nBIND: CBU 3220001812007068420022 · Alias COCOS.CAPITAL.USD\nCOINAG: CBU 4310009942700000068599 · Alias COCOS.MEP\n\n### USD Cable (exterior)\nJPMorgan Chase Bank NA · ABA 021000021 · SWIFT CHASUS33 · Account 912868897\n\n### Plazos de reclamo\nSi el cliente escribe antes de las 48hs: macro \"Ingreso antes de 48hs\". ARS: cargar reclamo a BO luego de las 17hs. USD: luego de las 14hs.", "response": "Hola [nombre], el plazo normal es de hasta 48 horas hábiles. Si transcurre ese plazo, envianos el comprobante junto con tu número de comitente y la constancia de CBU/CVU."}, {"id": "t2", "title": "Ingreso desde cuenta de terceros", "updatedAt": "2025-03-29", "desc": "Fondos enviados desde el CBU/CVU de otra persona.", "content": "### Desde CVU de terceros\nRechazo automático a las 72hs hábiles. Enviar macro Transferencia tercero CVU.\n\n### Desde CBU de terceros\nVerificar si el titular bancario tiene cuenta en Cocos (buscar en Retool por CUIT). Si tiene, informar que la acreditación será allí. Si no tiene, ofrecer apertura o tramitar el rechazo (aprox. 15 días hábiles).", "response": "Hola [nombre], por cuestiones de seguridad no se deben enviar fondos desde una cuenta de un tercero. Podemos tramitar el rechazo o el titular puede abrir su cuenta en Cocos sin costo."}, {"id": "t3", "title": "Egreso de fondos", "updatedAt": "2025-03-29", "desc": "Se puede retirar dinero en cualquier momento y sin costo.", "content": "Home > Enviar > seleccionar ARS o USD > elegir cuenta de destino > confirmar. Solo a CBU/CVU del mismo titular. Los cash out manuales se liberan cada 30 minutos. Límite acumulado de USD 5.000.\n\n### Si la extracción queda en pendiente\nVerificar que el CBU sea correcto y esté en pesos. Si está inhabilitado, indicar que consulte con su banco.\n\n### Si no puede extraer por saldo negativo\nAnalizar la causa: derechos de mercado, aranceles, operaciones duplicadas, negativo en títulos o caución tomadora.", "response": "Hola [nombre], podés retirar tus fondos desde la app en Home > Enviar. La cuenta de destino debe estar a tu nombre."}]}, {"id": "crypto", "name": "Cocos Crypto", "icon": "btc", "color": "#f7931a", "iconBg": "#fff7ed", "desc": "Operatoria de criptomonedas y CocosTag", "articles": [{"id": "cr1", "title": "Requisitos y alta de Crypto", "updatedAt": "2025-03-29", "desc": "Para operar se necesita cuenta activa y 2FA configurado.", "content": "### Requisitos\nCuenta activa en Cocos Capital, aceptar TyC de Crypto, ser persona física y configurar 2FA con Google Authenticator. Los co-titulares NO tienen acceso a la cuenta Crypto del titular.\n\n### Si no puede dar de alta Crypto\nVerificar en Complif (solapa Datos): nombre, apellido, género, mail, teléfono con +54, domicilio legal. En solapa Documentos: Frente DNI, Dorso del Documento, Selfie (nombres exactos).\n\nMail: **atencion@cocoscrypto.com**", "response": "Hola [nombre], para acceder a Cocos Crypto tocá el ícono violeta en la home y aceptá los términos y condiciones. Necesitás tener configurado el Google Authenticator."}, {"id": "cr4", "title": "Envío y recepción de criptoactivos", "updatedAt": "2025-03-29", "desc": "Para enviar crypto hay que tener la cuenta agendada y acordar la red.", "alert": {"type": "danger", "text": "Un envío a red incorrecta implica la pérdida de fondos. NO hay forma de recuperarlos de manera inmediata."}, "content": "### Redes disponibles en Cocos\nBitcoin → red Bitcoin. ETH y LINK → red Ethereum. USDC, USDT, DAI y Polygon → Ethereum o Polygon.\n\n### Límites de envío\nUSD 2.000 semanal (7 días corridos) · USD 1.000 diarios.\n\n### Error en la red\nCargar en planilla Escalamientos CX.xlsx pestaña \"Recupero de envío crypto\".", "response": "Hola [nombre], para enviar criptomonedas asegurate de elegir la red correcta.\n- Bitcoin: red Bitcoin · ETH y LINK: red Ethereum · USDC, USDT, DAI, Polygon: Ethereum o Polygon\n\nUn envío por red incorrecta implica la pérdida de los fondos."}, {"id": "cr5", "title": "CocosTag", "updatedAt": "2025-03-29", "desc": "Alias para enviar y recibir crypto entre cuentas de Cocos Crypto sin costo.", "content": "Permite enviar y recibir crypto entre cuentas de Cocos Crypto de forma gratuita y sin 2FA. Solo entre cuentas que hayan creado su tag. Búsqueda por match exacto.\n\n### Reglas del tag\nEntre 1 y 20 caracteres, debe iniciar con una letra. Se puede cambiar cada 6 meses.\n\n### Cómo crear\nDesde la home seleccionando \"Quiero mi CocosTag\" o desde el perfil.", "response": "Hola [nombre], el CocosTag es un alias para enviar y recibir crypto de forma gratuita. Para crearlo ingresá a la home y seleccioná Quiero mi CocosTag."}]}, {"id": "cocos_pay", "name": "Cocos Pay", "icon": "📲", "color": "#059669", "iconBg": "#ecfdf5", "desc": "Pagos con QR, PIX y Chave PIX", "articles": [{"id": "pay1", "title": "Pagos con QR en Argentina", "updatedAt": "2025-03-29", "desc": "Cocos Pay permite pagar escaneando QR interoperables en Argentina.", "content": "Home > Pagar > escanear QR > elegir método de pago > confirmar.\n\n### Métodos de pago\nARS, USD MEP, COCOA, Cocos Rendimiento FCI y COCOAUSD.\n\n### Límites\nDiario: USD 3.000 · Semanal: USD 20.000. Sin 2FA: USD 100 diarios.\n\n### Estados de pago\n**COMPLETED**: exitoso · **FAILED**: falló · **ABANDONED**: abandonado · **PENDING EXECUTION**: pendiente.", "response": "Hola [nombre], con Cocos Pay podés pagar escaneando cualquier QR interoperable en Argentina. Ingresá a Home > Pagar."}, {"id": "pay2", "title": "Pagos con PIX en Brasil", "updatedAt": "2025-03-29", "desc": "Cocos Pay permite pagar en Brasil con QR PIX o Chave PIX.", "content": "Solo en la versión móvil de la app. Avisar al comercio que se quiere pagar con PIX.\n\n### Cómo pagar con QR PIX\nHome > Pagar > escanear el QR PIX del comercio.\n\n### Cómo pagar con Chave PIX\nSeleccionar el banner \"Pagá con PIX en Brasil\" o dentro de Pagar elegir \"Pagar con chave PIX\".\n\n### Condiciones\nMínimo: 5 reales. La cotización entre pesos y reales está visible en la home.", "response": "Hola [nombre], con Cocos Pay podés pagar en Brasil escaneando el QR PIX o usando la Chave PIX. Ingresá a Home > Pagar."}]}, {"id": "tarjetas", "name": "Cocos Card", "icon": "💳", "color": "#7c3aed", "iconBg": "#f3f0ff", "desc": "Solicitud, activacion, pagos y problemas", "articles": [{"id": "tar1", "title": "Información general de la Cocos Card", "updatedAt": "2025-03-29", "desc": "Tarjeta prepaga Mastercard física y virtual. Sin costo de mantenimiento.", "content": "Tarjeta prepaga Mastercard gratuita, física y virtual. Requiere Google Authenticator (2FA) para solicitarla. Al pedir la física se habilita la virtual automáticamente; son independientes.\n\n### Límites\nMáximo diario: USD 2.000. Extracciones en cajero: solo en Argentina, límite $60.000 diarios, hasta 2 EXTRACASH por día. BIN: **5333 0512**.\n\n**NO se puede dar de baja la tarjeta si está pausada (BLOCKED). El cliente debe presionar REANUDAR primero.**", "response": "Hola [nombre], la Cocos Card es una tarjeta prepaga Mastercard gratuita. Podés solicitarla desde la sección Tarjetas en la app."}, {"id": "tar5", "title": "Pagos rechazados", "updatedAt": "2025-03-29", "desc": "Cómo identificar el motivo desde Pomelo.", "content": "Verificar en Pomelo > Cards > Transacciones haciendo click en la transacción.\n\n### Motivos frecuentes\n**INSUFFICIENT_FUNDS**: no tiene saldo en los métodos configurados. **CARD_NOT_ACTIVE**: la tarjeta está pausada. **REJECTED_FRAUD**: exceso de transacciones (7/hora o 20/día). **CARD_BLOCKED o RESTRICTED_USER**: derivar a Compliance con escalamiento Cuenta Banneada.", "response": "Hola [nombre], el rechazo puede deberse a saldo insuficiente, tarjeta pausada o límite de transacciones alcanzado. Verificá estos puntos y avisanos si continúa."}]}, {"id": "herramientas", "name": "Herramientas", "icon": "🛠", "color": "#6b7280", "iconBg": "#f9fafb", "desc": "Retool, Complif, Pomelo, planillas y recursos", "articles": [{"id": "her1", "title": "Retool", "updatedAt": "2025-03-29", "desc": "Herramienta principal para consultar datos de la cuenta del cliente.", "content": "Acceso: https://cocos.retool.com/ > Front Office > Vista Comitente.\n\n### Secciones principales\n**Ver info cuenta**: integrantes, mail, teléfonos, rol, Is active (tilde azul = activo). **Tenencia**: activos y monedas. **Poder de compra**: ARS = pesos · EXT = dólar cable · USD = dólar MEP. **id_application** completo = mesa. **id_user** completo = cliente. **LOGS**: GET (consultas) / POST (acciones) / DELETE (borrados).", "response": "Hola [nombre], para ayudarte voy a revisar tu cuenta en nuestros sistemas. Dame un momento."}, {"id": "her2", "title": "Complif", "updatedAt": "2025-03-29", "desc": "Plataforma para consultar estados de apertura y gestionar requerimientos.", "content": "Buscar por mail en solapa Personas. Ver estado del OB y requerimientos pendientes.\n\n### Estados de requerimientos\n**Pendiente**: el cliente aún no lo completó. **Completado**: el cliente lo envió. **En revisión**: Compliance lo está procesando.\n\n### Para cancelar requerimientos\nSolo para cambio de mail, teléfono y reset GA, y solo si están en estado Pendiente.", "response": "Hola [nombre], revisamos tu información en Complif. Te enviamos el requerimiento correspondiente."}, {"id": "her3", "title": "Planillas y accesos", "updatedAt": "2025-03-29", "desc": "Accesos y planillas principales del equipo CX.", "content": "### Accesos principales\nRetool: https://cocos.retool.com/ · App web: https://app.cocos.capital · Pomelo: https://pomelo.la/ar/ · Tarifario: https://cocos.capital/tarifario/\n\n### Planillas activas\nNotas de Crédito CX · Operaciones Atención · CX-COMPLIANCE PENDIENTES · Escalamientos CX · Bloqueos de usuarios 2025 · Rescates manuales · Validaciones clientes.", "response": ""}]}]};
+
+var curCat=null,curArtId=null,editId=null,editUserId=null,currentUser=null;
+
+function getCatIcon(c){
+  if(c.icon==='dni')return '<svg width="28" height="20" viewBox="0 0 30 22" fill="none"><rect x="1" y="1" width="28" height="20" rx="2" fill="#ecfeff" stroke="#0891b2" stroke-width="1.5"/><circle cx="8" cy="9" r="3.5" fill="#b0c4d8"/><path d="M3 18c0-2.5 2.2-4 5-4s5 1.5 5 4" stroke="#b0c4d8" stroke-width="1.2" fill="none"/><line x1="15" y1="7" x2="27" y2="7" stroke="#0891b2" stroke-width="1.5" opacity="0.4"/><line x1="15" y1="11" x2="25" y2="11" stroke="#0891b2" stroke-width="1.5" opacity="0.4"/><line x1="15" y1="15" x2="23" y2="15" stroke="#0891b2" stroke-width="1.5" opacity="0.4"/></svg>';
+  if(c.icon==='btc')return '<svg viewBox="0 0 32 32" width="26" height="26"><circle cx="16" cy="16" r="16" fill="#f7931a"/><g transform="rotate(-14,16,16)"><text x="8" y="22" font-size="18" font-weight="900" fill="white" font-family="Arial Black,sans-serif">&#8383;</text></g></svg>';
+  return '<span style="font-size:22px">'+c.icon+'</span>';
+}
+
+function showView(id){
+  document.querySelectorAll('#view-app .view, #view-notif').forEach(function(v){v.classList.remove('active');v.style.display='none';});
+  var el=document.getElementById('view-'+id);
+  if(el){el.classList.add('active');el.style.display='block';}
+  window.scrollTo(0,0);
+  document.getElementById('nav-kb').classList.toggle('on',id==='home'||id==='cat'||id==='art');
+  document.getElementById('nav-adm').classList.toggle('on',id==='admin');
+  document.getElementById('nav-notif').classList.toggle('on',id==='notif');
+}
+function goHome(){renderHome();showView('home');}
+function goAdmin(){if(currentUser&&currentUser.role==='admin'){renderAdminList();showView('admin');}}
+function goBack(){if(curCat)showCat(curCat);}
+function editCurrentArt(){if(currentUser&&currentUser.role==='admin'&&curCat&&curArtId){renderAdminList();editArt(curCat,curArtId);}}
+
+function getUserOrderKey(){return 'cx_cat_order_'+(currentUser?currentUser.id:'default');}
+function saveUserOrder(){
+  var order=DB.categories.map(function(c){return c.id;});
+  localStorage.setItem(getUserOrderKey(),JSON.stringify(order));
+}
+function loadUserOrder(){
+  try{
+    var saved=localStorage.getItem(getUserOrderKey());
+    if(!saved)return;
+    var order=JSON.parse(saved);
+    var sorted=[];
+    order.forEach(function(id){var c=DB.categories.find(function(x){return x.id===id;});if(c)sorted.push(c);});
+    DB.categories.forEach(function(c){if(sorted.indexOf(c)<0)sorted.push(c);});
+    DB.categories=sorted;
+  }catch(e){}
+}
+
+function renderHome(){
+  loadUserOrder();
+  var grid=document.getElementById('cat-grid');
+  var isAdmin=currentUser&&currentUser.role==='admin';
+  var hint=document.getElementById('reorder-hint');
+  if(hint)hint.className='reorder-hint on';
+
+  grid.innerHTML=DB.categories.map(function(c){
+    return '<div class="cat-card" id="cc-'+c.id+'" data-id="'+c.id+'" draggable="true" onclick="showCat(\''+c.id+'\')">'+
+      '<div class="cat-top" style="background:'+c.color+'"></div>'+
+      '<div class="cat-ico" style="background:'+c.iconBg+';display:flex;align-items:center;justify-content:center">'+getCatIcon(c)+'</div>'+
+      '<div class="cat-name">'+c.name+'</div>'+
+      '<div class="cat-cnt">'+c.articles.length+' art'+(c.articles.length!==1?'s':'')+'</div>'+
+    '</div>';
+  }).join('');
+
+  // Botón guardar orden
+  var saveOrderBtn=document.getElementById('save-order-btn');
+  if(saveOrderBtn)saveOrderBtn.style.display='none';
+
+  var dragged=null;
+  window._catDragMoved=false;
+  grid.querySelectorAll('.cat-card').forEach(function(card){
+    card.addEventListener('dragstart',function(e){
+      dragged=card;
+      window._catDragMoved=false;
+      setTimeout(function(){card.classList.add('dragging');},0);
+      e.dataTransfer.effectAllowed='move';
+    });
+    card.addEventListener('dragend',function(){
+      card.classList.remove('dragging');
+      grid.querySelectorAll('.cat-card').forEach(function(c){c.classList.remove('drag-over');});
+      dragged=null;
+      setTimeout(function(){window._catDragMoved=false;},300);
+    });
+    card.addEventListener('dragover',function(e){
+      e.preventDefault();
+      if(dragged&&dragged!==card){
+        grid.querySelectorAll('.cat-card').forEach(function(c){c.classList.remove('drag-over');});
+        card.classList.add('drag-over');
+      }
+    });
+    card.addEventListener('drop',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(!dragged||dragged===card)return;
+      window._catDragMoved=true;
+      var fromId=dragged.dataset.id;
+      var toId=card.dataset.id;
+      var fromIdx=DB.categories.findIndex(function(c){return c.id===fromId;});
+      var toIdx=DB.categories.findIndex(function(c){return c.id===toId;});
+      var moved=DB.categories.splice(fromIdx,1)[0];
+      DB.categories.splice(toIdx,0,moved);
+      // Redibujar sin llamar renderHome para no perder el botón
+      grid.innerHTML=DB.categories.map(function(c){
+        return '<div class="cat-card" id="cc-'+c.id+'" data-id="'+c.id+'" draggable="true" onclick="if(!window._catDragMoved)showCat(\''+c.id+'\')">'+
+          '<div class="cat-top" style="background:'+c.color+'"></div>'+
+          '<div class="cat-ico" style="background:'+c.iconBg+';display:flex;align-items:center;justify-content:center">'+getCatIcon(c)+'</div>'+
+          '<div class="cat-name">'+c.name+'</div>'+
+          '<div class="cat-cnt">'+c.articles.length+' art'+(c.articles.length!==1?'s':'')+'</div>'+
+        '</div>';
+      }).join('');
+      var btn=document.getElementById('save-order-btn');
+      if(btn)btn.style.display='inline-flex';
+      // Re-agregar listeners a las nuevas tarjetas
+      renderHome._attachDrag(grid);
+    });
+  });
+  renderHome._attachDrag=function(g){
+    var d2=null;
+    g.querySelectorAll('.cat-card').forEach(function(card){
+      card.addEventListener('dragstart',function(e){d2=card;window._catDragMoved=false;setTimeout(function(){card.classList.add('dragging');},0);e.dataTransfer.effectAllowed='move';});
+      card.addEventListener('dragend',function(){card.classList.remove('dragging');g.querySelectorAll('.cat-card').forEach(function(c){c.classList.remove('drag-over');});d2=null;setTimeout(function(){window._catDragMoved=false;},300);});
+      card.addEventListener('dragover',function(e){e.preventDefault();if(d2&&d2!==card){g.querySelectorAll('.cat-card').forEach(function(c){c.classList.remove('drag-over');});card.classList.add('drag-over');}});
+      card.addEventListener('drop',function(e){
+        e.preventDefault();e.stopPropagation();
+        if(!d2||d2===card)return;
+        window._catDragMoved=true;
+        var fi=DB.categories.findIndex(function(c){return c.id===d2.dataset.id;});
+        var ti=DB.categories.findIndex(function(c){return c.id===card.dataset.id;});
+        var mv=DB.categories.splice(fi,1)[0];
+        DB.categories.splice(ti,0,mv);
+        g.innerHTML=DB.categories.map(function(c){return '<div class="cat-card" id="cc-'+c.id+'" data-id="'+c.id+'" draggable="true" onclick="if(!window._catDragMoved)showCat(\''+c.id+'\')"><div class="cat-top" style="background:'+c.color+'"></div><div class="cat-ico" style="background:'+c.iconBg+';display:flex;align-items:center;justify-content:center">'+getCatIcon(c)+'</div><div class="cat-name">'+c.name+'</div><div class="cat-cnt">'+c.articles.length+' art'+(c.articles.length!==1?'s':'')+'</div></div>';}).join('');
+        var btn=document.getElementById('save-order-btn');if(btn)btn.style.display='inline-flex';
+        renderHome._attachDrag(g);
+      });
+    });
+  };
+}
+
+function showCat(id){
+  var cat=DB.categories.find(function(c){return c.id===id;});
+  curCat=id;
+  document.getElementById('cv-crumb').textContent=cat.name;
+  document.getElementById('cv-icon').style.cssText='background:'+cat.iconBg+';display:flex;align-items:center;justify-content:center';
+  document.getElementById('cv-icon').innerHTML=getCatIcon(cat);
+  document.getElementById('cv-title').textContent=cat.name;
+  document.getElementById('cv-desc').textContent=cat.desc;
+  // Botón agregar artículo solo para admins
+  var isAdmin=currentUser&&currentUser.role==='admin';
+  var addBtn=document.getElementById('cv-add-btn');
+  if(addBtn){
+    if(isAdmin){
+      addBtn.style.display='inline-flex';
+      addBtn.onclick=function(){renderAdminList();document.getElementById('ed-cat').value=id;openNew();document.getElementById('ed-cat').value=id;};
+    } else {
+      addBtn.style.display='none';
+    }
+  }
+  var artList=document.getElementById('art-list');
+  if(!cat.articles.length){
+    artList.innerHTML='<div style="padding:40px;text-align:center;color:#999;font-size:14px">No hay artículos en esta categoría.</div>';
+    showView('cat');return;
+  }
+  artList.innerHTML=(isAdmin?'<div style="font-size:12px;color:#aaa;margin-bottom:8px;padding:0 4px">✦ Arrastrá para reordenar · <span id="art-order-save" style="color:#0a1628;font-weight:600;cursor:pointer;display:none" onclick="saveArtOrder(\''+id+'\')">Guardar orden</span></div>':'')+
+    cat.articles.map(function(a){
+      return '<div class="art-item" id="ai-'+a.id+'" data-id="'+a.id+'"'+(isAdmin?' draggable="true"':'')+' onclick="showArt(\''+cat.id+'\',\''+a.id+'\')">'+
+        '<div class="ai-ico" style="background:'+cat.iconBg+';display:flex;align-items:center;justify-content:center">'+getCatIcon(cat)+'</div>'+
+        '<div class="ai-body"><h3>'+a.title+'</h3></div>'+
+        (isAdmin?'<span style="color:#ccc;font-size:18px;cursor:grab;padding:0 4px">⠿</span>':'')+
+        '<span class="ai-chev">›</span>'+
+      '</div>';
+    }).join('');
+
+  if(isAdmin){
+    var dragged=null;
+    artList.querySelectorAll('.art-item').forEach(function(item){
+      item.addEventListener('dragstart',function(e){
+        dragged=item;
+        setTimeout(function(){item.style.opacity='.4';},0);
+        e.dataTransfer.effectAllowed='move';
+        e.stopPropagation();
+      });
+      item.addEventListener('dragend',function(){
+        item.style.opacity='';
+        artList.querySelectorAll('.art-item').forEach(function(i){i.style.borderColor='';});
+        dragged=null;
+      });
+      item.addEventListener('dragover',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(dragged&&dragged!==item){
+          artList.querySelectorAll('.art-item').forEach(function(i){i.style.borderColor='';});
+          item.style.borderColor='#7eb8f7';
+        }
+      });
+      item.addEventListener('drop',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(!dragged||dragged===item)return;
+        var fromId=dragged.dataset.id;
+        var toId=item.dataset.id;
+        var cat2=DB.categories.find(function(c){return c.id===id;});
+        var fromIdx=cat2.articles.findIndex(function(a){return a.id===fromId;});
+        var toIdx=cat2.articles.findIndex(function(a){return a.id===toId;});
+        var moved=cat2.articles.splice(fromIdx,1)[0];
+        cat2.articles.splice(toIdx,0,moved);
+        showCat(id);
+        var saveBtn=document.getElementById('art-order-save');
+        if(saveBtn)saveBtn.style.display='inline';
+      });
+    });
+  }
+  showView('cat');
+}
+
+function saveArtOrder(catId){
+  saveToSheet();
+  var saveBtn=document.getElementById('art-order-save');
+  if(saveBtn){saveBtn.textContent='✓ Guardado';setTimeout(function(){saveBtn.textContent='Guardar orden';saveBtn.style.display='none';},2000);}
+}
+
+function showArt(catId,artId){
+  var cat=DB.categories.find(function(c){return c.id===catId;});
+  var art=cat.articles.find(function(a){return a.id===artId;});
+  curCat=catId;curArtId=artId;
+  document.getElementById('av-crumb').textContent=cat.name;
+  document.getElementById('av-art-crumb').textContent=art.title;
+  ['av-icon','a-icon'].forEach(function(id){document.getElementById(id).style.cssText='background:'+cat.iconBg+';display:flex;align-items:center;justify-content:center';document.getElementById(id).innerHTML=getCatIcon(cat);});
+  document.getElementById('av-title').textContent=cat.name;
+  document.getElementById('a-title').textContent=art.title;
+  document.getElementById('a-updated').textContent=art.updatedAt?'Última actualización: '+formatDate(art.updatedAt):'';
+  document.getElementById('a-alert').innerHTML=art.alert?'<div class="alert-box '+art.alert.type+'" style="margin-top:12px">⚠️ '+art.alert.text+'</div>':'';
+  var cs=document.getElementById('a-content-sec');
+  if(art.content){
+    cs.style.display='';
+    document.getElementById('a-content').innerHTML=renderContent(art.content);
+    // Generar índice lateral
+    buildTOC();
+  }else{
+    cs.style.display='none';
+    document.getElementById('art-toc').className='art-toc';
+  }
+  document.getElementById('btn-edit').style.display=(currentUser&&currentUser.role==='admin')?'':'none';
+  // Respuesta sugerida solo para admins
+  var respSec=document.getElementById('a-resp-sec');
+  if(currentUser&&currentUser.role==='admin'&&art.response){
+    respSec.style.display='';
+    respSec.innerHTML='<div class="stitle"><div class="stitle-dot" style="background:#7eb8f7"></div>Respuesta sugerida</div><div class="resp-box" id="a-resp">'+esc(art.response)+'</div><div class="copy-row"><button class="copy-btn" id="copy-btn" onclick="copyResp()">Copiar respuesta</button><span class="copy-hint" id="copy-hint"></span></div>';
+  } else {
+    respSec.style.display='none';
+  }
+  renderSugList(artId);
+  showView('art');
+}
+
+function formatDate(d){
+  if(!d)return '';var p=d.split('-'),m=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return parseInt(p[2])+' '+m[parseInt(p[1])-1]+' '+p[0];
+}
+function buildTOC(){
+  var content=document.getElementById('a-content');
+  var toc=document.getElementById('art-toc');
+  var tocLinks=document.getElementById('art-toc-links');
+  var headings=content.querySelectorAll('h3');
+  if(headings.length<2){toc.className='art-toc';return;}
+  toc.className='art-toc on';
+  tocLinks.innerHTML='';
+  headings.forEach(function(h,i){
+    var id='toc-h-'+i;
+    h.id=id;
+    var a=document.createElement('a');
+    a.href='#'+id;
+    a.textContent=h.textContent;
+    a.onclick=function(e){
+      e.preventDefault();
+      h.scrollIntoView({behavior:'smooth',block:'start'});
+      tocLinks.querySelectorAll('a').forEach(function(x){x.classList.remove('active');});
+      a.classList.add('active');
+    };
+    tocLinks.appendChild(a);
+  });
+  // Highlight activo al scrollear
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var id=entry.target.id;
+        tocLinks.querySelectorAll('a').forEach(function(a){
+          a.classList.toggle('active',a.getAttribute('href')==='#'+id);
+        });
+      }
+    });
+  },{threshold:0.5});
+  headings.forEach(function(h){obs.observe(h);});
+}
+
+function copyResp(){
+  navigator.clipboard.writeText(document.getElementById('a-resp').textContent).then(function(){
+    var b=document.getElementById('copy-btn');
+    b.textContent='Copiado!';b.classList.add('ok');
+    document.getElementById('copy-hint').textContent='Listo para pegar en el chat';
+    setTimeout(function(){b.textContent='Copiar respuesta';b.classList.remove('ok');document.getElementById('copy-hint').textContent='';},2500);
+  });
+}
+
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'');}
+function getResults(q){
+  var res=[];
+  DB.categories.forEach(function(cat){
+    cat.articles.forEach(function(art){
+      var txt=[art.title,art.desc,art.content||'',art.response||''].join(' ');
+      if(norm(q).split(/\s+/).filter(Boolean).every(function(w){return norm(txt).indexOf(w)>=0;}))
+        res.push({cat:cat,art:art});
+    });
+  });
+  return res;
+}
+
+var dropEl,dropIdx=-1,dropResults=[];
+function renderDrop(q){
+  var res=getResults(q);dropResults=res.slice(0,6);dropIdx=-1;
+  dropEl.innerHTML=dropResults.length
+    ?dropResults.map(function(r,i){
+        return '<div class="dr-item" id="dri-'+i+'" onclick="selectDrop('+i+')">'+
+          '<div class="dr-left" style="background:'+r.cat.iconBg+'">'+getCatIcon(r.cat)+'</div>'+
+          '<div style="flex:1;min-width:0">'+
+            '<div class="dr-cat">'+r.cat.name+'</div>'+
+            '<div class="dr-title">'+r.art.title+'</div>'+
+            '<div class="dr-snip">'+r.art.desc+'</div>'+
+          '</div>'+
+          '<span style="color:#ccc;font-size:14px">›</span>'+
+        '</div>';
+      }).join('')+'<div class="dr-stats">'+res.length+' resultado'+(res.length!==1?'s':'')+'</div>'
+    :'<div class="dr-empty">Sin resultados para "'+q+'"</div>';
+  dropEl.style.display='block';
+}
+function highlightDrop(){dropResults.forEach(function(_,i){var el=document.getElementById('dri-'+i);if(el)el.style.background=i===dropIdx?'#eef4ff':'';});}
+function selectDrop(i){if(!dropResults[i])return;showArt(dropResults[i].cat.id,dropResults[i].art.id);dropEl.style.display='none';dropIdx=-1;}
+function showSearchResults(q,res){
+  document.getElementById('cv-crumb').textContent='Búsqueda: "'+q+'"';
+  document.getElementById('cv-icon').style.cssText='background:#eef4ff;font-size:22px;display:flex;align-items:center;justify-content:center';
+  document.getElementById('cv-icon').innerHTML='🔍';
+  document.getElementById('cv-title').textContent=res.length+' resultado'+(res.length!==1?'s':'')+' para "'+q+'"';
+  document.getElementById('cv-desc').textContent='';
+  document.getElementById('art-list').innerHTML=res.length
+    ?res.map(function(r){return '<div class="art-item" onclick="showArt(\''+r.cat.id+'\',\''+r.art.id+'\')"><div class="ai-ico" style="background:'+r.cat.iconBg+';display:flex;align-items:center;justify-content:center">'+getCatIcon(r.cat)+'</div><div class="ai-body"><h3>'+r.art.title+'</h3><div style="font-size:11px;color:#888">'+r.cat.name+'</div></div><span class="ai-chev">›</span></div>';}).join('')
+    :'<div style="padding:40px;text-align:center;color:#999">No se encontraron resultados.</div>';
+  showView('cat');
+}
+
+// ─── ADMIN ARTICLES ──────────────────────────────────────
+function filterAdminList(){
+  var q=norm(document.getElementById('admin-srch').value.trim());
+  document.querySelectorAll('.art-ed-item').forEach(function(el){el.style.display=(!q||norm(el.querySelector('.aei-t').textContent).indexOf(q)>=0)?'':'none';});
+}
+function renderAdminList(){
+  var total=DB.categories.reduce(function(s,c){return s+c.articles.length;},0);
+  document.getElementById('art-cnt').textContent=total+' artículos · '+DB.categories.length+' categorías';
+  document.getElementById('art-ed-list').innerHTML=DB.categories.map(function(cat){
+    return cat.articles.map(function(art){
+      return '<div class="art-ed-item"><div><div class="aei-t">'+art.title+'</div><div class="aei-m">'+cat.name+'</div></div>'+
+        '<div class="aei-btns"><button class="btn-sm" onclick="editArt(\''+cat.id+'\',\''+art.id+'\')">Editar</button>'+
+        '<button class="btn-sm del" onclick="delArt(\''+cat.id+'\',\''+art.id+'\')">Eliminar</button></div></div>';
+    }).join('');
+  }).join('');
+  document.getElementById('ed-cat').innerHTML=DB.categories.map(function(c){return '<option value="'+c.id+'">'+c.name+'</option>';}).join('');
+}
+function renderCatEdList(){
+  var container=document.getElementById('cat-ed-list');container.innerHTML='';
+  DB.categories.forEach(function(cat){
+    var row=document.createElement('div');row.className='cat-ed-row';
+    var ico=document.createElement('div');ico.style.cssText='width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:'+cat.iconBg;ico.innerHTML=getCatIcon(cat);
+    var fields=document.createElement('div');fields.className='cat-ed-fields';
+    var n=document.createElement('input');n.type='text';n.value=cat.name;n.placeholder='Nombre';
+    (function(c){n.addEventListener('input',function(){c.name=this.value;renderHome();document.getElementById('ed-cat').innerHTML=DB.categories.map(function(x){return '<option value="'+x.id+'">'+x.name+'</option>';}).join('');});})(cat);
+    var d=document.createElement('input');d.type='text';d.value=cat.desc||'';d.placeholder='Descripcion';
+    (function(c){d.addEventListener('input',function(){c.desc=this.value;});})(cat);
+    fields.appendChild(n);fields.appendChild(d);row.appendChild(ico);row.appendChild(fields);container.appendChild(row);
+  });
+  // Botón guardar orden
+  var saveRow=document.createElement('div');saveRow.style.cssText='display:flex;gap:10px;margin-top:16px;align-items:center';
+  var saveBtn=document.createElement('button');saveBtn.className='btn-p';saveBtn.textContent='Guardar cambios';
+  saveBtn.onclick=function(){saveToSheet();var ok=document.createElement('span');ok.textContent='✓ Guardado';ok.style.cssText='font-size:13px;color:#16a34a';saveRow.appendChild(ok);setTimeout(function(){if(ok.parentNode)ok.parentNode.removeChild(ok);},2000);};
+  // Botón agregar categoría
+  var addBtn=document.createElement('button');addBtn.className='btn-s';addBtn.textContent='+ Nueva categoría';
+  addBtn.onclick=function(){openNewCat();};
+  saveRow.appendChild(saveBtn);saveRow.appendChild(addBtn);container.appendChild(saveRow);
+}
+function openNewCat(){
+  var name=prompt('Nombre de la nueva categoría:');
+  if(!name||!name.trim())return;
+  var desc=prompt('Descripción breve:');
+  var id='cat'+Date.now();
+  DB.categories.push({id:id,name:name.trim(),icon:'📁',color:'#6b7280',iconBg:'#f9fafb',desc:desc||'',articles:[]});
+  renderHome();
+  renderCatEdList();
+  renderAdminList();
+  saveToSheet();
+}
+function switchTab(id){
+  var tabs=['articles','cats','users','export'];
+  document.querySelectorAll('.atab').forEach(function(t,i){t.classList.toggle('on',tabs[i]===id);});
+  document.querySelectorAll('.atab-pane').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('tab-'+id).classList.add('on');
+  if(id==='cats')renderCatEdList();
+  if(id==='users')renderUserList();
+}
+function openNew(){
+  editId=null;
+  document.getElementById('modal-ttl').textContent='Nuevo artículo';
+  document.getElementById('ed-title').value='';
+  document.getElementById('ed-desc').value='';
+  document.getElementById('ed-content').innerHTML=''; // ← innerHTML para el editor visual
+  document.getElementById('ed-resp').value='';
+  document.getElementById('ed-alt-txt').value='';
+  document.getElementById('ed-alt-type').value='';
+  document.getElementById('ed-alt-txt').style.display='none';
+  document.getElementById('modal').style.display='flex';
+}
+function editArt(catId,artId){
+  var cat=DB.categories.find(function(c){return c.id===catId;});
+  var art=cat.articles.find(function(a){return a.id===artId;});
+  editId={catId:catId,artId:artId};
+  document.getElementById('modal-ttl').textContent='Editar artículo';
+  document.getElementById('ed-cat').value=catId;
+  document.getElementById('ed-title').value=art.title;
+  document.getElementById('ed-desc').value=art.desc;
+  // ← CORRECCIÓN PRINCIPAL: usar innerHTML y convertir markdown a HTML
+  document.getElementById('ed-content').innerHTML=markdownToHTML(art.content||'');
+  document.getElementById('ed-resp').value=art.response||'';
+  var al=art.alert||{};
+  document.getElementById('ed-alt-type').value=al.type||'';
+  document.getElementById('ed-alt-txt').value=al.text||'';
+  document.getElementById('ed-alt-txt').style.display=al.type?'block':'none';
+  document.getElementById('modal').style.display='flex';
+}
+document.getElementById('ed-alt-type').addEventListener('change',function(){document.getElementById('ed-alt-txt').style.display=this.value?'block':'none';});
+function saveArt(){
+  var title=document.getElementById('ed-title').value.trim();
+  var desc=document.getElementById('ed-desc').value.trim();
+  if(!title){alert('El título es obligatorio.');return;}
+  var catId=document.getElementById('ed-cat').value;
+  var at=document.getElementById('ed-alt-type').value;
+  var atxt=document.getElementById('ed-alt-txt').value.trim();
+  var art={
+    id:'a'+Date.now(),
+    title:title,
+    desc:desc,
+    content:editorToMarkdown(), // ← convierte el HTML del editor a markdown
+    response:document.getElementById('ed-resp').value.trim(),
+    updatedAt:new Date().toISOString().slice(0,10)
+  };
+  if(at&&atxt)art.alert={type:at,text:atxt};
+  if(editId){
+    var cat=DB.categories.find(function(c){return c.id===editId.catId;});
+    var idx=cat.articles.findIndex(function(a){return a.id===editId.artId;});
+    art.id=editId.artId;
+    if(editId.catId!==catId){cat.articles.splice(idx,1);DB.categories.find(function(c){return c.id===catId;}).articles.push(art);}
+    else{cat.articles[idx]=art;}
+  }else{DB.categories.find(function(c){return c.id===catId;}).articles.push(art);}
+  closeModal();renderAdminList();renderHome();saveToSheet();
+  if(editId&&curArtId===editId.artId){showArt(editId.catId,editId.artId);}
+}
+
+function delArt(catId,artId){
+  if(!confirm('¿Eliminar este artículo?'))return;
+  var cat=DB.categories.find(function(c){return c.id===catId;});
+  cat.articles=cat.articles.filter(function(a){return a.id!==artId;});
+  renderAdminList();renderHome();saveToSheet();
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+// Modal no se cierra al hacer clic fuera para evitar pérdida de datos
+
+// ─── ADMIN USERS ─────────────────────────────────────────
+function renderUserList(){
+  var users=getUsers();
+  document.getElementById('user-cnt').textContent=users.length+' usuario'+(users.length!==1?'s':'');
+  document.getElementById('user-ed-list').innerHTML=users.map(function(u){
+    var isMe=currentUser&&u.id===currentUser.id;
+    return '<div class="user-ed-item">'+
+      '<div>'+
+        '<div style="font-size:14px;font-weight:600;color:#0a1628;margin-bottom:3px">'+esc(u.name)+(isMe?' <span style="font-size:11px;color:#888">(vos)</span>':'')+'</div>'+
+        '<div style="font-size:12px;color:#999">'+esc(u.mail)+'</div>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:8px">'+
+        '<span class="user-role'+(u.role==='admin'?' admin':'')+'">'+u.role+'</span>'+
+        '<button class="btn-sm" onclick="editUser(\''+u.id+'\')">Editar</button>'+
+        (!isMe?'<button class="btn-sm del" onclick="delUser(\''+u.id+'\')">Eliminar</button>':'<button class="btn-sm" disabled style="opacity:.4;cursor:default">Eliminar</button>')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+function openNewUser(){
+  editUserId=null;
+  document.getElementById('modal-user-ttl').textContent='Nuevo usuario';
+  ['eu-name','eu-mail','eu-pass'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('eu-role').value='user';
+  document.getElementById('eu-err').style.display='none';
+  document.getElementById('modal-user').style.display='flex';
+}
+function editUser(id){
+  var users=getUsers();
+  var user=users.find(function(u){return u.id===id;});
+  if(!user)return;
+  editUserId=id;
+  document.getElementById('modal-user-ttl').textContent='Editar usuario';
+  document.getElementById('eu-name').value=user.name;
+  document.getElementById('eu-mail').value=user.mail;
+  document.getElementById('eu-pass').value='';
+  document.getElementById('eu-role').value=user.role;
+  document.getElementById('eu-err').style.display='none';
+  document.getElementById('modal-user').style.display='flex';
+}
+function saveUser(){
+  var name=document.getElementById('eu-name').value.trim();
+  var mail=document.getElementById('eu-mail').value.trim().toLowerCase();
+  var pass=document.getElementById('eu-pass').value;
+  var role=document.getElementById('eu-role').value;
+  var errEl=document.getElementById('eu-err');
+  if(!name||!mail){errEl.textContent='El nombre y el mail son obligatorios.';errEl.style.display='block';return;}
+  if(!editUserId&&pass.length<6){errEl.textContent='La contraseña debe tener al menos 6 caracteres.';errEl.style.display='block';return;}
+  var users=getUsers();
+  var dup=users.find(function(u){return u.mail===mail&&u.id!==editUserId;});
+  if(dup){errEl.textContent='Ya existe un usuario con ese mail.';errEl.style.display='block';return;}
+  if(editUserId){
+    var idx=users.findIndex(function(u){return u.id===editUserId;});
+    if(idx>=0){
+      users[idx].name=name;users[idx].mail=mail;users[idx].role=role;
+      if(pass.length>=6)users[idx].pass=pass;
+      if(currentUser&&users[idx].id===currentUser.id){currentUser.name=name;currentUser.role=role;setSession(currentUser);document.getElementById('nav-user').textContent=name;}
+    }
+  }else{
+    users.push({id:'u'+Date.now(),name:name,mail:mail,pass:pass,role:role});
+  }
+  saveUsers(users);closeUserModal();renderUserList();
+}
+function delUser(id){
+  if(!confirm('¿Eliminar este usuario?'))return;
+  var users=getUsers().filter(function(u){return u.id!==id;});
+  saveUsers(users);renderUserList();
+}
+function closeUserModal(){document.getElementById('modal-user').style.display='none';}
+document.getElementById('modal-user').addEventListener('click',function(e){if(e.target===document.getElementById('modal-user'))closeUserModal();});
+
+// ─── BACKUP ──────────────────────────────────────────────
+function exportJSON(){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}));
+  a.download='base-conocimiento.json';a.click();
+  var m=document.getElementById('exp-msg');m.style.display='block';
+  setTimeout(function(){m.style.display='none';},3000);
+}
+function importJSON(input){
+  var f=input.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){try{DB=JSON.parse(e.target.result);renderAdminList();renderHome();alert('Importado correctamente.');}catch(err){alert('JSON inválido.');}};
+  r.readAsText(f);
+}
+
+// ─── SUGERENCIAS ─────────────────────────────────────────
+var SUGS_KEY='cx_suggestions';
+
+function getSuggestions(){
+  try{var s=localStorage.getItem(SUGS_KEY);return s?JSON.parse(s):[];}catch(e){return[];}
+}
+function saveSuggestions(s){localStorage.setItem(SUGS_KEY,JSON.stringify(s));}
+
+function sendSuggestion(){
+  var text=document.getElementById('sug-input').value.trim();
+  if(!text){alert('Escribí tu sugerencia primero.');return;}
+  var cat=DB.categories.find(function(c){return c.id===curCat;});
+  var art=cat?cat.articles.find(function(a){return a.id===curArtId;}):null;
+  if(!art)return;
+  var sugs=getSuggestions();
+  var sug={
+    id:'s'+Date.now(),
+    artId:curArtId,
+    catId:curCat,
+    artTitle:art.title,
+    catName:cat.name,
+    userId:currentUser.id,
+    userName:currentUser.name,
+    text:text,
+    status:'pending',
+    reply:'',
+    createdAt:new Date().toISOString()
+  };
+  sugs.unshift(sug);
+  saveSuggestions(sugs);
+  document.getElementById('sug-input').value='';
+  renderSugList(curArtId);
+  updateNotifBadge();
+  alert('¡Sugerencia enviada! Los admins la revisarán pronto.');
+}
+
+function renderSugList(artId){
+  var sugs=getSuggestions().filter(function(s){return s.artId===artId;});
+  var el=document.getElementById('sug-list');
+  if(!el)return;
+  if(!sugs.length){el.innerHTML='';return;}
+  el.innerHTML=sugs.map(function(s){
+    var statusLabel={pending:'Pendiente',approved:'Aprobada',rejected:'Rechazada'}[s.status]||s.status;
+    var replyHtml=s.reply?'<div class="sug-item-reply"><strong>Admin:</strong> '+esc(s.reply)+'</div>':'';
+    var isOwn=currentUser&&s.userId===currentUser.id;
+    if(!isOwn&&!(currentUser&&currentUser.role==='admin'))return '';
+    return '<div class="sug-item">'+
+      '<div class="sug-item-top">'+
+        '<span class="sug-item-user">'+esc(s.userName)+'</span>'+
+        '<div style="display:flex;align-items:center;gap:8px">'+
+          '<span class="sug-status '+s.status+'">'+statusLabel+'</span>'+
+          '<span class="sug-item-date">'+formatDate(s.createdAt.slice(0,10))+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="sug-item-text">'+esc(s.text)+'</div>'+
+      replyHtml+
+    '</div>';
+  }).join('');
+}
+
+function updateNotifBadge(){
+  var sugs=getSuggestions();
+  var badge=document.getElementById('notif-badge');
+  if(!badge)return;
+  if(currentUser&&currentUser.role==='admin'){
+    var pending=sugs.filter(function(s){return s.status==='pending';}).length;
+    badge.textContent=pending;
+    badge.className='notif-badge'+(pending>0?' on':'');
+  } else {
+    var mine=sugs.filter(function(s){return s.userId===currentUser.id&&s.status!=='pending'&&!s.seenByUser;}).length;
+    badge.textContent=mine;
+    badge.className='notif-badge'+(mine>0?' on':'');
+  }
+}
+
+function goNotif(tab){
+  updateNotifBadge();
+  var sugs=getSuggestions();
+  var isAdmin=currentUser&&currentUser.role==='admin';
+  var title=document.getElementById('notif-view-title');
+  var sub=document.getElementById('notif-view-sub');
+  var list=document.getElementById('notif-list');
+  tab=tab||'pending';
+
+  if(isAdmin){
+    title.textContent='Sugerencias';
+    var pending=sugs.filter(function(s){return s.status==='pending';});
+    var resolved=sugs.filter(function(s){return s.status!=='pending';});
+    sub.textContent=pending.length+' pendiente'+(pending.length!==1?'s':'');
+
+    // Solapas
+    var tabsHtml='<div style="display:flex;gap:4px;background:#e8edf5;border-radius:8px;padding:4px;width:fit-content;margin-bottom:20px">'+
+      '<button onclick="goNotif(\'pending\')" style="padding:7px 16px;font-size:13px;font-weight:500;cursor:pointer;border-radius:6px;border:none;background:'+(tab==='pending'?'#fff':'transparent')+';color:'+(tab==='pending'?'#0a1628':'#666')+';box-shadow:'+(tab==='pending'?'0 1px 4px rgba(0,0,0,.08)':'none')+'">Pendientes ('+pending.length+')</button>'+
+      '<button onclick="goNotif(\'resolved\')" style="padding:7px 16px;font-size:13px;font-weight:500;cursor:pointer;border-radius:6px;border:none;background:'+(tab==='resolved'?'#fff':'transparent')+';color:'+(tab==='resolved'?'#0a1628':'#666')+';box-shadow:'+(tab==='resolved'?'0 1px 4px rgba(0,0,0,.08)':'none')+'">Historial ('+resolved.length+')</button>'+
+    '</div>';
+
+    if(tab==='pending'){
+      list.innerHTML=tabsHtml+(pending.length
+        ?pending.map(function(s){
+            return '<div class="notif-card unread" id="nc-'+s.id+'">'+
+              '<div class="notif-card-top">'+
+                '<div>'+
+                  '<div class="notif-art">'+esc(s.catName)+' › '+esc(s.artTitle)+'</div>'+
+                  '<div class="notif-user">'+esc(s.userName)+'</div>'+
+                '</div>'+
+                '<span class="notif-date">'+formatDate(s.createdAt.slice(0,10))+'</span>'+
+              '</div>'+
+              '<div class="notif-msg">'+esc(s.text)+'</div>'+
+              '<div class="notif-actions">'+
+                '<input class="notif-reply-input" id="reply-'+s.id+'" placeholder="Escribí una respuesta (opcional)...">'+
+                '<button class="btn-s" style="font-size:12px;padding:7px 12px" onclick="showArt(\''+s.catId+'\',\''+s.artId+'\')">Ver artículo</button>'+
+                '<button class="btn-approve" onclick="resolveSug(\''+s.id+'\',\'approved\')">✓ Aprobar</button>'+
+                '<button class="btn-reject" onclick="resolveSug(\''+s.id+'\',\'rejected\')">✕ Rechazar</button>'+
+              '</div>'+
+            '</div>';
+          }).join('')
+        :'<div style="text-align:center;padding:48px;color:#aaa;font-size:14px">No hay sugerencias pendientes 🎉</div>');
+    } else {
+      list.innerHTML=tabsHtml+(resolved.length
+        ?resolved.map(function(s){
+            var statusLabel={approved:'Aprobada',rejected:'Rechazada'}[s.status]||s.status;
+            var replyHtml=s.reply?'<div class="sug-item-reply" style="margin-top:8px"><strong>Respuesta:</strong> '+esc(s.reply)+'</div>':'';
+            var resolvedBy=s.resolvedBy?'<span style="font-size:11px;color:#aaa;margin-left:8px">por '+esc(s.resolvedBy)+'</span>':'';
+            var resolvedAt=s.resolvedAt?'<span style="font-size:11px;color:#aaa"> · '+formatDate(s.resolvedAt.slice(0,10))+'</span>':'';
+            return '<div class="notif-card">'+
+              '<div class="notif-card-top">'+
+                '<div>'+
+                  '<div class="notif-art">'+esc(s.catName)+' › '+esc(s.artTitle)+'</div>'+
+                  '<div class="notif-user">'+esc(s.userName)+'</div>'+
+                '</div>'+
+                '<div style="text-align:right;flex-shrink:0">'+
+                  '<span class="sug-status '+s.status+'" style="display:block;margin-bottom:2px">'+statusLabel+resolvedBy+'</span>'+
+                  resolvedAt+
+                '</div>'+
+              '</div>'+
+              '<div class="notif-msg">'+esc(s.text)+'</div>'+
+              replyHtml+
+              '<div style="margin-top:8px"><button class="btn-s" style="font-size:11px;padding:4px 10px" onclick="showArt(\''+s.catId+'\',\''+s.artId+'\')">Ver artículo</button></div>'+
+            '</div>';
+          }).join('')
+        :'<div style="text-align:center;padding:48px;color:#aaa;font-size:14px">Todavía no hay sugerencias resueltas</div>');
+    }
+  } else {
+    title.textContent='Mis sugerencias';
+    var mine=sugs.filter(function(s){return s.userId===currentUser.id;});
+    sub.textContent=mine.length+' sugerencia'+(mine.length!==1?'s':'')+' enviada'+(mine.length!==1?'s':'');
+    var updated=false;
+    sugs=sugs.map(function(s){
+      if(s.userId===currentUser.id&&s.status!=='pending'&&!s.seenByUser){s.seenByUser=true;updated=true;}
+      return s;
+    });
+    if(updated){saveSuggestions(sugs);updateNotifBadge();}
+    list.innerHTML=mine.length
+      ?mine.map(function(s){
+          var statusLabel={pending:'Pendiente',approved:'Aprobada',rejected:'Rechazada'}[s.status];
+          var replyHtml=s.reply?'<div class="sug-item-reply" style="margin-top:8px"><strong>Respuesta:</strong> '+esc(s.reply)+'</div>':'';
+          return '<div class="notif-card'+(s.status==='pending'?' unread':'')+'">'+
+            '<div class="notif-card-top">'+
+              '<div>'+
+                '<div class="notif-art">'+esc(s.catName)+' › '+esc(s.artTitle)+'</div>'+
+                '<div class="notif-msg" style="margin:4px 0 0">'+esc(s.text)+'</div>'+
+              '</div>'+
+              '<div style="text-align:right;flex-shrink:0">'+
+                '<span class="sug-status '+s.status+'" style="display:block;margin-bottom:4px">'+statusLabel+'</span>'+
+                '<span class="notif-date">'+formatDate(s.createdAt.slice(0,10))+'</span>'+
+              '</div>'+
+            '</div>'+
+            replyHtml+
+          '</div>';
+        }).join('')
+      :'<div style="text-align:center;padding:48px;color:#aaa;font-size:14px">Todavía no enviaste sugerencias</div>';
+  }
+  showView('notif');
+}
+
+function resolveSug(id,status){
+  var reply=document.getElementById('reply-'+id);
+  var replyText=reply?reply.value.trim():'';
+  var sugs=getSuggestions();
+  sugs=sugs.map(function(s){
+    if(s.id===id){
+      s.status=status;
+      s.reply=replyText;
+      s.seenByUser=false;
+      s.resolvedBy=currentUser.name;
+      s.resolvedAt=new Date().toISOString();
+    }
+    return s;
+  });
+  saveSuggestions(sugs);
+  updateNotifBadge();
+  var sug=sugs.find(function(s){return s.id===id;});
+  if(status==='approved'&&sug){
+    goNotif('resolved');
+    if(confirm('¿Querés editar el artículo "'+sug.artTitle+'" ahora?')){
+      renderAdminList();
+      editArt(sug.catId,sug.artId);
+    }
+  } else {
+    goNotif('pending');
+  }
+}
+
+// ─── SEARCH ──────────────────────────────────────────────
+dropEl=document.getElementById('drop');
+var srchEl=document.getElementById('srch');
+srchEl.addEventListener('input',function(){
+  var q=this.value.trim();
+  if(q.length<2){dropEl.style.display='none';dropIdx=-1;return;}
+  renderDrop(q);
+});
+document.addEventListener('keydown',function(e){
+  if(document.activeElement!==srchEl)return;
+  if(dropEl.style.display!=='block'||!dropResults.length){
+    if(e.key==='Enter'){var q=srchEl.value.trim();if(q.length<2)return;var res=getResults(q);dropEl.style.display='none';if(res.length===1)showArt(res[0].cat.id,res[0].art.id);else if(res.length>1)showSearchResults(q,res);}
+    return;
+  }
+  if(e.key==='ArrowDown'){e.preventDefault();dropIdx=dropIdx<dropResults.length-1?dropIdx+1:0;highlightDrop();}
+  else if(e.key==='ArrowUp'){e.preventDefault();dropIdx=dropIdx>0?dropIdx-1:dropResults.length-1;highlightDrop();}
+  else if(e.key==='Enter'){e.preventDefault();if(dropIdx>=0)selectDrop(dropIdx);else{var q=srchEl.value.trim();var res=getResults(q);dropEl.style.display='none';if(res.length===1)showArt(res[0].cat.id,res[0].art.id);else if(res.length>1)showSearchResults(q,res);}}
+  else if(e.key==='Escape'){dropEl.style.display='none';dropIdx=-1;}
+},true);
+document.addEventListener('click',function(e){if(!e.target.closest('.srch-wrap')){dropEl.style.display='none';dropIdx=-1;}});
+document.getElementById('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+
+document.addEventListener('scroll',function(){
+  var btn=document.getElementById('back-top');
+  if(btn)btn.className='back-top'+(window.scrollY>300?' on':'');
+});
+
+// ─── INIT ────────────────────────────────────────────────
+initUsers();
+var session=getSession();
+if(session){
+  currentUser=session;
+  startApp(session);
+}
+</script>
+</body>
+</html>
