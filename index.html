@@ -561,23 +561,7 @@ function editorToMarkdown(){
   }
 
   result=Array.from(el.childNodes).map(nodeToMd).join('');
-  // Unir líneas de texto que pertenecen al mismo párrafo
-  // (líneas que no son títulos, listas ni imágenes)
-  var lines=result.split('\n');
-  var merged=[];
-  var buf='';
-  lines.forEach(function(line){
-    var t=line.trim();
-    var isSpecial=t.startsWith('### ')||t.startsWith('- ')||t.match(/^\d+\.\s/)||t.startsWith('![')||t==='';
-    if(isSpecial){
-      if(buf){merged.push(buf);buf='';}
-      merged.push(line);
-    } else {
-      if(buf){buf+=' '+t;}else{buf=t;}
-    }
-  });
-  if(buf)merged.push(buf);
-  return merged.join('\n').replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'').trim();
+  return result.replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'').trim();
 }
 
 function edCmd(cmd,val){
