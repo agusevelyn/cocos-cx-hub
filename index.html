@@ -1625,7 +1625,8 @@ document.addEventListener('scroll',function(){
 // ─── EDITOR LISTENERS ────────────────────────────────────
 function initEditorListeners(){
   var ed=document.getElementById('ed-content');
-  if(!ed)return;
+  if(!ed||ed._listenersSet)return;
+  ed._listenersSet=true;
   ed.addEventListener('keydown',function(e){
     if(e.key==='Enter'&&!e.shiftKey){
       e.preventDefault();
