@@ -593,11 +593,6 @@ function edInsertResp(){
     '</div><p></p>'
   );
 }
-  var url=prompt('Pegá la URL de la imagen (ej: https://i.imgur.com/xxx.jpg):');
-  if(!url)return;
-  document.getElementById('ed-content').focus();
-  document.execCommand('insertHTML',false,'<img src="'+url+'" style="max-width:100%;border-radius:8px;border:1px solid #e8edf5;margin:8px 0;display:block">');
-}
 
 // ─── GOOGLE SHEETS API ──────────────────────────────────
 var SCRIPT_URL='https://script.google.com/macros/s/AKfycbw4oSvrnMrj1imPnaWJFC2eFbYz1D0AhxjEgx7SyqCpUgSmLSbi0m5rhaCokIzMW7Aq/exec';
