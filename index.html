@@ -415,6 +415,7 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
         <button type="button" onclick="edInsertList('ul')" title="Lista con viñetas">—</button>
         <button type="button" onclick="edInsertImg()" title="Imagen">🖼</button>
         <button type="button" onclick="edInsertLink()" title="Link">🔗</button>
+        <button type="button" onclick="edInsertResp()" title="Respuesta sugerida" style="background:#D7ECFE;border-color:#0062DE;color:#002C65">💬 Respuesta</button>
       </div>
       <div id="ed-content" class="editor-visual" contenteditable="true" data-placeholder="Escribí el contenido acá..."></div>
       <script>
@@ -423,6 +424,14 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
           e.preventDefault();
           document.execCommand('insertParagraph',false,null);
         }
+      });
+      document.getElementById('ed-content').addEventListener('paste',function(e){
+        e.preventDefault();
+        var text=e.clipboardData.getData('text/plain');
+        if(!text)return;
+        // Limpiar saltos de línea múltiples y pegar como texto plano
+        var clean=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n{3,}/g,'\n\n');
+        document.execCommand('insertText',false,clean);
       });
       </script>
     </div>
@@ -459,6 +468,16 @@ function markdownToHTML(text){
   var lines=text.split('\n'),html='',inOl=false,inUl=false;
   lines.forEach(function(line){
     var t=line.trim();
+    // Bloque respuesta sugerida
+    var respM=t.match(/^>>>(.+)<<<$/);
+    if(respM){
+      var rt=respM[1].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      html+='<div class="resp-inline" data-resp="'+rt.replace(/"/g,'&quot;')+'" contenteditable="false" style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:12px 16px;margin:12px 0">'+
+        '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px">💬 Respuesta sugerida</div>'+
+        '<div style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6">'+rt+'</div>'+
+        '</div>';
+      return;
+    }
     if(!t){
       if(inOl){html+='</ol>';inOl=false;}
       if(inUl){html+='</ul>';inUl=false;}
@@ -518,6 +537,10 @@ function editorToMarkdown(){
     if(tag==='h3')return '\n### '+inner.trim()+'\n';
     if(tag==='strong'||tag==='b')return '**'+inner.trim()+'**';
     if(tag==='a'){var href=node.getAttribute('href')||'';return '['+inner.trim()+']('+href+')';}
+    if(tag==='div'&&node.classList&&node.classList.contains('resp-inline')){
+      var respText=node.getAttribute('data-resp')||inner.trim();
+      return '\n>>>'+respText+'<<<\n';
+    }
     if(tag==='br')return '\n';
     if(tag==='img'){var src=node.getAttribute('src')||'';var alt=node.getAttribute('alt')||'';return '\n!['+alt+']('+src+')\n';}
     if(tag==='li'){
@@ -567,6 +590,20 @@ function edInsertList(type){
   document.execCommand(type==='ol'?'insertOrderedList':'insertUnorderedList',false,null);
 }
 
+function edInsertImg(){
+  var url=prompt('Pegá la URL de la imagen (ej: https://i.imgur.com/xxx.jpg):');
+  if(!url)return;
+  document.getElementById('ed-content').focus();
+  document.execCommand('insertHTML',false,'<img src="'+url+'" style="max-width:100%;border-radius:8px;border:1px solid #e8edf5;margin:8px 0;display:block">');
+}
+
+function saveLocalBackup(){
+  try{localStorage.setItem('cx_db_backup',JSON.stringify({ts:Date.now(),categories:DB.categories}));}catch(e){}
+}
+function loadLocalBackup(){
+  try{var s=localStorage.getItem('cx_db_backup');return s?JSON.parse(s):null;}catch(e){return null;}
+}
+
 function edInsertLink(){
   var url=prompt('URL del link:');
   if(!url)return;
@@ -576,7 +613,18 @@ function edInsertLink(){
   document.execCommand('insertHTML',false,'<a href="'+url+'" target="_blank" style="color:#001533;text-decoration:underline">'+text+'</a>');
 }
 
-function edInsertImg(){
+function edInsertResp(){
+  var texto=prompt('Escribí la respuesta sugerida:');
+  if(!texto)return;
+  document.getElementById('ed-content').focus();
+  var id='resp-'+Date.now();
+  document.execCommand('insertHTML',false,
+    '<div class="resp-inline" data-resp="'+texto.replace(/"/g,'&quot;')+'" contenteditable="false" style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:12px 16px;margin:12px 0;position:relative">'+
+    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px">💬 Respuesta sugerida</div>'+
+    '<div style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6">'+texto.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>'+
+    '</div><p></p>'
+  );
+}
   var url=prompt('Pegá la URL de la imagen (ej: https://i.imgur.com/xxx.jpg):');
   if(!url)return;
   document.getElementById('ed-content').focus();
@@ -784,6 +832,21 @@ function renderContent(text){
       var imgTag='<img src="'+esc(imgM[2])+'" alt="'+esc(imgM[1])+'" style="max-width:100%;border-radius:8px;border:1px solid #e8edf5;display:block;margin:8px 0" onerror="this.parentNode.style.display=\'none\'">';
       if(inOl||inUl){html=html.replace(/<\/li>$/,''+imgTag+'</li>');}
       else{html+='<div style="margin:12px 0">'+imgTag+'</div>';}
+      return;
+    }
+    // Bloque respuesta sugerida inline
+    var respM=t.match(/^>>>(.+)<<<$/);
+    if(respM){
+      if(inOl){html+='</ol>';inOl=false;}
+      if(inUl){html+='</ul>';inUl=false;}
+      var rid='rcp-'+Math.random().toString(36).slice(2,8);
+      var rt=esc(respM[1]);
+      var rtRaw=respM[1].replace(/'/g,"\\'");
+      html+='<div style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:14px 16px;margin:14px 0">'+
+        '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:8px">\ud83d\udcac Respuesta sugerida</div>'+
+        '<div style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6;margin-bottom:10px">'+rt+'</div>'+
+        '<button id="'+rid+'" onclick="(function(b,t){navigator.clipboard.writeText(t).then(function(){b.textContent=\'\u2713 Copiado\';b.style.background=\'#16a34a\';setTimeout(function(){b.textContent=\'Copiar\';b.style.background=\'#001533\';},2000);})})(document.getElementById(\''+rid+'\'),\''+rtRaw+'\')" style="padding:6px 14px;background:#001533;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Copiar</button>'+
+        '</div>';
       return;
     }
     var olM=t.match(/^(\d+)\.\s+(.+)/);
