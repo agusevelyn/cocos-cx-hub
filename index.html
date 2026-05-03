@@ -246,7 +246,7 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
       <div class="login-err" id="login-err">Mail o contraseña incorrectos</div>
       <div class="lfl"><label>Mail</label><input type="email" id="login-mail" placeholder="tu@cocos.capital" autocomplete="email"></div>
       <div class="lfl"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
-      <button class="login-btn" onclick="doLogin()">Ingresar</button>
+      <button class="login-btn" id="login-btn">Ingresar</button>
     </div>
   </div>
 </div>
@@ -1619,6 +1619,7 @@ document.addEventListener('keydown',function(e){
   else if(e.key==='Escape'){dropEl.style.display='none';dropIdx=-1;}
 },true);
 document.addEventListener('click',function(e){if(!e.target.closest('.srch-wrap')){dropEl.style.display='none';dropIdx=-1;}});
+document.getElementById('login-btn').addEventListener('click', doLogin);
 document.getElementById('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 
 document.addEventListener('scroll',function(){
