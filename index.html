@@ -418,22 +418,6 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
         <button type="button" onclick="edInsertResp()" title="Respuesta sugerida" style="background:#D7ECFE;border-color:#0062DE;color:#002C65">💬 Respuesta</button>
       </div>
       <div id="ed-content" class="editor-visual" contenteditable="true" data-placeholder="Escribí el contenido acá..."></div>
-      <script>
-      document.getElementById('ed-content').addEventListener('keydown',function(e){
-        if(e.key==='Enter'&&!e.shiftKey){
-          e.preventDefault();
-          document.execCommand('insertParagraph',false,null);
-        }
-      });
-      document.getElementById('ed-content').addEventListener('paste',function(e){
-        e.preventDefault();
-        var text=e.clipboardData.getData('text/plain');
-        if(!text)return;
-        // Limpiar saltos de línea múltiples y pegar como texto plano
-        var clean=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n{3,}/g,'\n\n');
-        document.execCommand('insertText',false,clean);
-      });
-      </script>
     </div>
     <div class="fl"><label>Respuesta sugerida</label><textarea id="ed-resp" rows="4" placeholder="Hola [nombre], ..."></textarea></div>
     <div class="modal-ft"><button class="btn-s" onclick="closeModal()">Cancelar</button><button class="btn-p" onclick="saveArt()">Guardar</button></div>
@@ -753,23 +737,28 @@ function initUsers(){
 }
 
 async function hashPass(pw){
-  var buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
-  return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  try{
+    var buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  }catch(e){
+    return pw; // fallback si crypto.subtle no está disponible
+  }
 }
 
 async function doLogin(){
   var mail=document.getElementById('login-mail').value.trim().toLowerCase();
   var pass=document.getElementById('login-pass').value;
-  var hashed=await hashPass(pass);
   var users=getUsers();
-  var user=users.find(function(u){return u.mail.toLowerCase()===mail&&(u.pass===hashed||u.pass===pass);});
-  if(!user){document.getElementById('login-err').style.display='block';return;}
-  // Si la pass estaba en texto plano, la hasheamos ahora
-  if(user.pass===pass){
-    var idx=users.findIndex(function(u){return u.id===user.id;});
-    users[idx].pass=hashed;
-    saveUsers(users);
+  // Primero intentar con texto plano (compatibilidad)
+  var user=users.find(function(u){return u.mail.toLowerCase()===mail&&u.pass===pass;});
+  if(!user){
+    // Intentar con hash
+    try{
+      var hashed=await hashPass(pass);
+      user=users.find(function(u){return u.mail.toLowerCase()===mail&&u.pass===hashed;});
+    }catch(e){}
   }
+  if(!user){document.getElementById('login-err').style.display='block';return;}
   setSession({id:user.id,name:user.name,mail:user.mail,role:user.role});
   startApp(user);
 }
@@ -1262,6 +1251,7 @@ function openNew(){
   document.getElementById('ed-alt-type').value='';
   document.getElementById('ed-alt-txt').style.display='none';
   document.getElementById('modal').style.display='flex';
+  initEditorListeners();
 }
 function editArt(catId,artId){
   var cat=DB.categories.find(function(c){return c.id===catId;});
@@ -1279,6 +1269,7 @@ function editArt(catId,artId){
   document.getElementById('ed-alt-txt').value=al.text||'';
   document.getElementById('ed-alt-txt').style.display=al.type?'block':'none';
   document.getElementById('modal').style.display='flex';
+  initEditorListeners();
 }
 document.getElementById('ed-alt-type').addEventListener('change',function(){document.getElementById('ed-alt-txt').style.display=this.value?'block':'none';});
 function saveArt(){
@@ -1634,6 +1625,25 @@ document.addEventListener('scroll',function(){
   var btn=document.getElementById('back-top');
   if(btn)btn.className='back-top'+(window.scrollY>300?' on':'');
 });
+
+// ─── EDITOR LISTENERS ────────────────────────────────────
+function initEditorListeners(){
+  var ed=document.getElementById('ed-content');
+  if(!ed)return;
+  ed.addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&!e.shiftKey){
+      e.preventDefault();
+      document.execCommand('insertParagraph',false,null);
+    }
+  });
+  ed.addEventListener('paste',function(e){
+    e.preventDefault();
+    var text=e.clipboardData.getData('text/plain');
+    if(!text)return;
+    var clean=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n{3,}/g,'\n\n');
+    document.execCommand('insertText',false,clean);
+  });
+}
 
 // ─── INIT ────────────────────────────────────────────────
 initUsers();
