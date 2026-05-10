@@ -480,6 +480,7 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
         <button type="button" onmousedown="event.preventDefault()" onclick="edInsertImg()" title="Imagen">🖼</button>
         <button type="button" onmousedown="event.preventDefault()" onclick="edInsertLink()" title="Link">🔗</button>
         <button type="button" onmousedown="event.preventDefault()" onclick="edInsertResp()" title="Respuesta sugerida" style="background:#D7ECFE;border-color:#0062DE;color:#002C65">💬 Respuesta</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="edInsertAlert()" title="Alerta/Aviso" style="background:#fef3c7;border-color:#f59e0b;color:#92400e">⚠️ Alerta</button>
       </div>
       <div id="ed-content" class="editor-visual" contenteditable="true" data-placeholder="Escribí el contenido acá..."></div>
     </div>
@@ -523,6 +524,30 @@ function markdownToHTML(text){
       html+='<div class="resp-inline" data-resp="'+rtHTML.replace(/"/g,'&quot;')+'" contenteditable="false" ondblclick="editRespBlock(this)" style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:12px 16px;margin:12px 0;cursor:pointer">'+
         '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">💬 Respuesta sugerida <span style="display:flex;gap:8px;align-items:center"><span style="font-size:9px;color:#0062DE;font-weight:600;opacity:.7">✏ Doble clic · 🔗 link disponible</span><button type="button" onclick="this.closest(\'.resp-inline\').remove()" title="Eliminar" style="background:#fee;color:#dc2626;border:1px solid #fcc;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer">✕</button></span></div>'+
         '<div class="resp-content" contenteditable="true" style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6;outline:none" oninput="this.parentNode.setAttribute(\'data-resp\',this.innerHTML)">'+rtHTML+'</div>'+
+        '</div>';
+      return;
+    }
+    // Bloque alerta
+    var alertM=t.match(/^@@@(warning|info|important)\|(.+)@@@$/);
+    if(alertM){
+      var aType=alertM[1];
+      var aHTML=alertM[2].replace(/§§/g,'<br>');
+      var aIcons={warning:'⚠️',info:'ℹ️',important:'❗'};
+      var aBgs={warning:'#fffbeb',info:'#eff6ff',important:'#fef2f2'};
+      var aBorders={warning:'#f59e0b',info:'#0062DE',important:'#dc2626'};
+      html+='<div class="alert-inline" data-alert-type="'+aType+'" contenteditable="false" style="background:'+aBgs[aType]+';border-left:4px solid '+aBorders[aType]+';border-radius:6px;padding:12px 16px;margin:12px 0;display:flex;gap:10px;align-items:flex-start">'+
+        '<span style="font-size:18px;line-height:1;flex-shrink:0">'+aIcons[aType]+'</span>'+
+        '<div style="flex:1;display:flex;flex-direction:column;gap:6px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+
+        '<select onchange="this.closest(\'.alert-inline\').setAttribute(\'data-alert-type\',this.value);updateAlertStyle(this.closest(\'.alert-inline\'),this.value)" onmousedown="event.stopPropagation()" style="font-size:11px;font-weight:600;border:1px solid #e8edf5;border-radius:4px;padding:2px 6px;background:#fff;cursor:pointer">'+
+        '<option value="warning"'+(aType==='warning'?' selected':'')+'>⚠️ Advertencia</option>'+
+        '<option value="info"'+(aType==='info'?' selected':'')+'>ℹ️ Información</option>'+
+        '<option value="important"'+(aType==='important'?' selected':'')+'>❗ Importante</option>'+
+        '</select>'+
+        '<button type="button" onclick="this.closest(\'.alert-inline\').remove()" title="Eliminar" style="background:#fee;color:#dc2626;border:1px solid #fcc;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer">✕</button>'+
+        '</div>'+
+        '<div class="alert-content" contenteditable="true" style="font-size:13px;color:#001533;line-height:1.5;outline:none">'+aHTML+'</div>'+
+        '</div>'+
         '</div>';
       return;
     }
@@ -601,6 +626,14 @@ function editorToMarkdown(){
       var encoded=respHTML.replace(/\n/g,'').replace(/§§/g,'').replace(/<br>/g,'§§').replace(/<br\/>/g,'§§').replace(/<br \/>/g,'§§');
       return '\n>>>'+encoded+'<<<\n';
     }
+    if(tag==='div'&&node.classList&&node.classList.contains('alert-inline')){
+      var alertContentEl=node.querySelector('.alert-content');
+      var alertHTML=alertContentEl?alertContentEl.innerHTML.trim():'';
+      var alertType=node.getAttribute('data-alert-type')||'warning';
+      if(!alertHTML)return '';
+      var aEncoded=alertHTML.replace(/\n/g,'').replace(/<br>/g,'§§').replace(/<br\/>/g,'§§').replace(/<br \/>/g,'§§');
+      return '\n@@@'+alertType+'|'+aEncoded+'@@@\n';
+    }
     if(tag==='br')return '\n';
     if(tag==='img'){var src=node.getAttribute('src')||'';var alt=node.getAttribute('alt')||'';return '\n!['+alt+']('+src+')\n';}
     if(tag==='li'){
@@ -623,19 +656,40 @@ function editorToMarkdown(){
   result=Array.from(el.childNodes).map(nodeToMd).join('');
   // Limpiar negritas con espacios extra que dejan asteriscos sueltos
   result=result.replace(/\*\*\s+/g,'**').replace(/\s+\*\*/g,'**');
-  // Limpiar asteriscos vacíos
   result=result.replace(/\*\*\*\*/g,'');
+  // Asegurar línea vacía entre títulos consecutivos
+  result=result.replace(/(### [^\n]+)\n(### )/g,'$1\n\n$2');
+  // Asegurar salto antes de un ### si quedó pegado a texto
+  result=result.replace(/([^\n])(\n### )/g,'$1\n$2');
   return result.replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'').trim();
 }
 
+var _savedRange=null;
+function saveSelection(){
+  var sel=window.getSelection();
+  if(sel.rangeCount>0){
+    _savedRange=sel.getRangeAt(0);
+  }
+}
+function restoreSelection(){
+  if(_savedRange){
+    var sel=window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(_savedRange);
+  }
+}
 function edCmd(cmd,val){
+  restoreSelection();
   document.getElementById('ed-content').focus();
   document.execCommand(cmd,false,val||null);
+  saveSelection();
 }
 
 function edInsertList(type){
+  restoreSelection();
   document.getElementById('ed-content').focus();
   document.execCommand(type==='ol'?'insertOrderedList':'insertUnorderedList',false,null);
+  saveSelection();
 }
 
 function edInsertImg(){
@@ -659,6 +713,44 @@ function edInsertLink(){
   if(!text)text=url;
   document.getElementById('ed-content').focus();
   document.execCommand('insertHTML',false,'<a href="'+url+'" target="_blank" style="color:#001533;text-decoration:underline">'+text+'</a>');
+}
+
+function edInsertAlert(){
+  document.getElementById('ed-content').focus();
+  document.execCommand('insertHTML',false,
+    '<div class="alert-inline" data-alert-type="warning" contenteditable="false" style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:6px;padding:12px 16px;margin:12px 0;cursor:pointer;display:flex;gap:10px;align-items:flex-start">'+
+    '<span style="font-size:18px;line-height:1;flex-shrink:0">⚠️</span>'+
+    '<div style="flex:1;display:flex;flex-direction:column;gap:6px">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+
+    '<select onchange="this.closest(\'.alert-inline\').setAttribute(\'data-alert-type\',this.value);updateAlertStyle(this.closest(\'.alert-inline\'),this.value)" onmousedown="event.stopPropagation()" style="font-size:11px;font-weight:600;border:1px solid #e8edf5;border-radius:4px;padding:2px 6px;background:#fff;cursor:pointer">'+
+    '<option value="warning">⚠️ Advertencia</option>'+
+    '<option value="info">ℹ️ Información</option>'+
+    '<option value="important">❗ Importante</option>'+
+    '</select>'+
+    '<button type="button" onclick="this.closest(\'.alert-inline\').remove()" title="Eliminar" style="background:#fee;color:#dc2626;border:1px solid #fcc;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer">✕</button>'+
+    '</div>'+
+    '<div class="alert-content" contenteditable="true" style="font-size:13px;color:#001533;line-height:1.5;outline:none" data-placeholder="Escribí el aviso acá..."></div>'+
+    '</div>'+
+    '</div><p><br></p>'
+  );
+  setTimeout(function(){
+    var blocks=document.querySelectorAll('.alert-inline');
+    var last=blocks[blocks.length-1];
+    if(last){
+      var content=last.querySelector('.alert-content');
+      if(content)content.focus();
+    }
+  },50);
+}
+
+function updateAlertStyle(block,type){
+  var icons={warning:'⚠️',info:'ℹ️',important:'❗'};
+  var bgs={warning:'#fffbeb',info:'#eff6ff',important:'#fef2f2'};
+  var borders={warning:'#f59e0b',info:'#0062DE',important:'#dc2626'};
+  block.style.background=bgs[type];
+  block.style.borderLeftColor=borders[type];
+  var icon=block.querySelector('span');
+  if(icon)icon.textContent=icons[type];
 }
 
 function edInsertResp(){
@@ -885,10 +977,10 @@ function fmt(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').re
 function renderContent(text){
   if(!text)return '';
   // Limpiar contenido corrupto antes de procesar
+  // Asegurar salto de línea ANTES de cualquier ### que no esté al inicio de línea
+  text=text.replace(/([^\n])(### )/g,'$1\n$2');
   // Separar ### pegados a texto sin espacio después
   text=text.replace(/###([^\s#])/g,'### $1');
-  // Separar ### pegados a texto anterior (sin salto antes)
-  text=text.replace(/([^\n])(###\s)/g,'$1\n$2');
   // Detectar bloques >>> ... <<< con saltos rotos en el medio y unirlos
   text=text.replace(/>>>([\s\S]+?)<<</g,function(m,inner){
     return '\n>>>'+inner.replace(/\n/g,'§§').replace(/§§§+/g,'§§')+'<<<\n';
@@ -939,6 +1031,22 @@ function renderContent(text){
         '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:8px">\ud83d\udcac Respuesta sugerida</div>'+
         '<div id="'+rid+'-content" style="font-size:13px;color:#001533;line-height:1.6;margin-bottom:10px">'+rtHTML+'</div>'+
         '<button id="'+rid+'" onclick="copyRichContent(\''+rid+'-content\',this)" style="padding:6px 14px;background:#001533;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Copiar</button>'+
+        '</div>';
+      return;
+    }
+    // Bloque alerta
+    var alertM=t.match(/^@@@(warning|info|important)\|(.+)@@@$/);
+    if(alertM){
+      if(inOl){html+='</ol>';inOl=false;}
+      if(inUl){html+='</ul>';inUl=false;}
+      var aType=alertM[1];
+      var aHTML=alertM[2].replace(/§§/g,'<br>');
+      var aIcons={warning:'⚠️',info:'ℹ️',important:'❗'};
+      var aBgs={warning:'#fffbeb',info:'#eff6ff',important:'#fef2f2'};
+      var aBorders={warning:'#f59e0b',info:'#0062DE',important:'#dc2626'};
+      html+='<div style="background:'+aBgs[aType]+';border-left:4px solid '+aBorders[aType]+';border-radius:6px;padding:14px 16px;margin:14px 0;display:flex;gap:12px;align-items:flex-start">'+
+        '<span style="font-size:20px;line-height:1;flex-shrink:0">'+aIcons[aType]+'</span>'+
+        '<div style="font-size:14px;color:#001533;line-height:1.6">'+aHTML+'</div>'+
         '</div>';
       return;
     }
@@ -1787,6 +1895,9 @@ function initEditorListeners(){
   var ed=document.getElementById('ed-content');
   if(!ed||ed._listenersSet)return;
   ed._listenersSet=true;
+  // Guardar la selección cuando cambia
+  ed.addEventListener('mouseup',saveSelection);
+  ed.addEventListener('keyup',saveSelection);
   ed.addEventListener('click',function(e){
     // Si hace clic justo abajo de un bloque respuesta, ir al párrafo siguiente
     if(e.target===ed){
