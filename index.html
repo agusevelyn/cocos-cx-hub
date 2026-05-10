@@ -519,11 +519,10 @@ function markdownToHTML(text){
     // Bloque respuesta sugerida
     var respM=t.match(/^>>>(.+)<<<$/);
     if(respM){
-      var rtRaw=respM[1].replace(/§§/g,'\n');
-      var rt=rtRaw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      html+='<div class="resp-inline" data-resp="'+rt.replace(/"/g,'&quot;').replace(/\n/g,'&#10;')+'" contenteditable="false" ondblclick="editRespBlock(this)" style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:12px 16px;margin:12px 0;cursor:pointer">'+
-        '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">💬 Respuesta sugerida <span style="display:flex;gap:8px;align-items:center"><span style="font-size:9px;color:#0062DE;font-weight:600;opacity:.7">✏ Doble clic</span><button type="button" onclick="this.closest(\'.resp-inline\').remove()" title="Eliminar" style="background:#fee;color:#dc2626;border:1px solid #fcc;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer">✕</button></span></div>'+
-        '<div class="resp-content" contenteditable="true" style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6;outline:none" oninput="this.parentNode.setAttribute(\'data-resp\',this.innerText)">'+rt+'</div>'+
+      var rtHTML=respM[1].replace(/§§/g,'<br>');
+      html+='<div class="resp-inline" data-resp="'+rtHTML.replace(/"/g,'&quot;')+'" contenteditable="false" ondblclick="editRespBlock(this)" style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:12px 16px;margin:12px 0;cursor:pointer">'+
+        '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">💬 Respuesta sugerida <span style="display:flex;gap:8px;align-items:center"><span style="font-size:9px;color:#0062DE;font-weight:600;opacity:.7">✏ Doble clic · 🔗 link disponible</span><button type="button" onclick="this.closest(\'.resp-inline\').remove()" title="Eliminar" style="background:#fee;color:#dc2626;border:1px solid #fcc;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer">✕</button></span></div>'+
+        '<div class="resp-content" contenteditable="true" style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6;outline:none" oninput="this.parentNode.setAttribute(\'data-resp\',this.innerHTML)">'+rtHTML+'</div>'+
         '</div>';
       return;
     }
@@ -588,10 +587,10 @@ function editorToMarkdown(){
     if(tag==='a'){var href=node.getAttribute('href')||'';return '['+inner.trim()+']('+href+')';}
     if(tag==='div'&&node.classList&&node.classList.contains('resp-inline')){
       var contentEl=node.querySelector('.resp-content');
-      var respText=contentEl?contentEl.innerText.trim():(node.getAttribute('data-resp')||'');
-      if(!respText)return '';
-      // Codificar saltos de línea para que quepan en una sola línea
-      var encoded=respText.replace(/\n/g,'§§');
+      var respHTML=contentEl?contentEl.innerHTML.trim():(node.getAttribute('data-resp')||'');
+      if(!respHTML)return '';
+      // Codificar saltos de línea y comillas para que quepan en una sola línea
+      var encoded=respHTML.replace(/\n/g,'').replace(/§§/g,'').replace(/<br>/g,'§§').replace(/<br\/>/g,'§§').replace(/<br \/>/g,'§§');
       return '\n>>>'+encoded+'<<<\n';
     }
     if(tag==='br')return '\n';
@@ -659,8 +658,8 @@ function edInsertResp(){
   var id='resp-'+Date.now();
   document.execCommand('insertHTML',false,
     '<div class="resp-inline" data-resp="" contenteditable="false" ondblclick="editRespBlock(this)" style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:12px 16px;margin:12px 0;cursor:pointer;position:relative">'+
-    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">💬 Respuesta sugerida <span style="display:flex;gap:8px;align-items:center"><span style="font-size:9px;color:#0062DE;font-weight:600;opacity:.7">✏ Doble clic</span><button type="button" onclick="this.closest(\'.resp-inline\').remove()" title="Eliminar" style="background:#fee;color:#dc2626;border:1px solid #fcc;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer">✕</button></span></div>'+
-    '<div class="resp-content" contenteditable="true" style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6;outline:none;min-height:20px" data-placeholder="Escribí la respuesta sugerida acá..." oninput="this.parentNode.setAttribute(\'data-resp\',this.innerText)"></div>'+
+    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">💬 Respuesta sugerida <span style="display:flex;gap:8px;align-items:center"><span style="font-size:9px;color:#0062DE;font-weight:600;opacity:.7">✏ Doble clic · 🔗 link disponible</span><button type="button" onclick="this.closest(\'.resp-inline\').remove()" title="Eliminar" style="background:#fee;color:#dc2626;border:1px solid #fcc;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer">✕</button></span></div>'+
+    '<div class="resp-content" contenteditable="true" style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6;outline:none;min-height:20px" data-placeholder="Escribí la respuesta sugerida acá..." oninput="this.parentNode.setAttribute(\'data-resp\',this.innerHTML)"></div>'+
     '</div><p><br></p>'
   );
   setTimeout(function(){
@@ -877,6 +876,21 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function fmt(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*\*/g,'').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" style="color:#001533;text-decoration:underline">$1</a>');}
 function renderContent(text){
   if(!text)return '';
+  // Limpiar contenido corrupto antes de procesar
+  // Separar ### pegados a texto sin espacio después
+  text=text.replace(/###([^\s#])/g,'### $1');
+  // Separar ### pegados a texto anterior (sin salto antes)
+  text=text.replace(/([^\n])(###\s)/g,'$1\n$2');
+  // Detectar bloques >>> ... <<< con saltos rotos en el medio y unirlos
+  text=text.replace(/>>>([\s\S]+?)<<</g,function(m,inner){
+    return '\n>>>'+inner.replace(/\n/g,'§§').replace(/§§§+/g,'§§')+'<<<\n';
+  });
+  // §§ sueltos fuera de bloques se convierten en saltos de línea
+  var parts=text.split(/(>>>[\s\S]+?<<<)/);
+  text=parts.map(function(p){
+    if(p.startsWith('>>>'))return p;
+    return p.replace(/§§/g,'\n');
+  }).join('');
   var lines=text.split('\n'),html='',inOl=false,inUl=false;
   lines.forEach(function(line){
     var t=line.trim();
@@ -899,13 +913,15 @@ function renderContent(text){
       if(inOl){html+='</ol>';inOl=false;}
       if(inUl){html+='</ul>';inUl=false;}
       var rid='rcp-'+Math.random().toString(36).slice(2,8);
-      var rtRawDecoded=respM[1].replace(/§§/g,'\n');
-      var rt=esc(rtRawDecoded);
-      var rtRaw=rtRawDecoded.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
+      var rtHTML=respM[1].replace(/§§/g,'<br>');
+      // Texto plano para fallback de copia
+      var tmpDiv=document.createElement('div');
+      tmpDiv.innerHTML=rtHTML;
+      var rtPlain=tmpDiv.innerText;
       html+='<div style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:14px 16px;margin:14px 0">'+
         '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:8px">\ud83d\udcac Respuesta sugerida</div>'+
-        '<div style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6;margin-bottom:10px">'+rt+'</div>'+
-        '<button id="'+rid+'" onclick="(function(b,t){navigator.clipboard.writeText(t).then(function(){b.textContent=\'\u2713 Copiado\';b.style.background=\'#16a34a\';setTimeout(function(){b.textContent=\'Copiar\';b.style.background=\'#001533\';},2000);})})(document.getElementById(\''+rid+'\'),\''+rtRaw+'\')" style="padding:6px 14px;background:#001533;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Copiar</button>'+
+        '<div id="'+rid+'-content" style="font-size:13px;color:#001533;line-height:1.6;margin-bottom:10px">'+rtHTML+'</div>'+
+        '<button id="'+rid+'" onclick="copyRichContent(\''+rid+'-content\',this)" style="padding:6px 14px;background:#001533;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Copiar</button>'+
         '</div>';
       return;
     }
@@ -1186,6 +1202,35 @@ function formatDate(d){
   if(!d)return '';var p=d.split('-'),m=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   return parseInt(p[2])+' '+m[parseInt(p[1])-1]+' '+p[0];
 }
+function copyRichContent(elId,btn){
+  var el=document.getElementById(elId);
+  if(!el)return;
+  var html=el.innerHTML;
+  var text=el.innerText;
+  try{
+    var item=new ClipboardItem({
+      'text/html':new Blob([html],{type:'text/html'}),
+      'text/plain':new Blob([text],{type:'text/plain'})
+    });
+    navigator.clipboard.write([item]).then(function(){
+      btn.textContent='✓ Copiado';
+      btn.style.background='#16a34a';
+      setTimeout(function(){btn.textContent='Copiar';btn.style.background='#001533';},2000);
+    }).catch(function(){
+      // Fallback a texto plano
+      navigator.clipboard.writeText(text);
+      btn.textContent='✓ Copiado';
+      btn.style.background='#16a34a';
+      setTimeout(function(){btn.textContent='Copiar';btn.style.background='#001533';},2000);
+    });
+  }catch(e){
+    navigator.clipboard.writeText(text);
+    btn.textContent='✓ Copiado';
+    btn.style.background='#16a34a';
+    setTimeout(function(){btn.textContent='Copiar';btn.style.background='#001533';},2000);
+  }
+}
+
 function buildTOC(){
   var content=document.getElementById('a-content');
   var toc=document.getElementById('art-toc');
