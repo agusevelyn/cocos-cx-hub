@@ -472,14 +472,14 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
     <div class="fl">
       <label>Contenido</label>
       <div class="editor-toolbar">
-        <button type="button" onclick="edCmd('formatBlock','h3')" title="Título de sección">H</button>
-        <button type="button" onclick="edCmd('formatBlock','p')" title="Párrafo normal">P</button>
-        <button type="button" onclick="edCmd('bold')" title="Negrita"><b>B</b></button>
-        <button type="button" onclick="edInsertList('ol')" title="Lista numerada">1.</button>
-        <button type="button" onclick="edInsertList('ul')" title="Lista con viñetas">—</button>
-        <button type="button" onclick="edInsertImg()" title="Imagen">🖼</button>
-        <button type="button" onclick="edInsertLink()" title="Link">🔗</button>
-        <button type="button" onclick="edInsertResp()" title="Respuesta sugerida" style="background:#D7ECFE;border-color:#0062DE;color:#002C65">💬 Respuesta</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="edCmd('formatBlock','h3')" title="Título de sección">H</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="edCmd('formatBlock','p')" title="Párrafo normal">P</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="edCmd('bold')" title="Negrita"><b>B</b></button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="edInsertList('ol')" title="Lista numerada">1.</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="edInsertList('ul')" title="Lista con viñetas">—</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="edInsertImg()" title="Imagen">🖼</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="edInsertLink()" title="Link">🔗</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="edInsertResp()" title="Respuesta sugerida" style="background:#D7ECFE;border-color:#0062DE;color:#002C65">💬 Respuesta</button>
       </div>
       <div id="ed-content" class="editor-visual" contenteditable="true" data-placeholder="Escribí el contenido acá..."></div>
     </div>
@@ -531,10 +531,12 @@ function markdownToHTML(text){
       if(inUl){html+='</ul>';inUl=false;}
       return;
     }
-    if(t.startsWith('### ')){
+    if(t.startsWith('###')){
+      var titleTxt=t.replace(/^#+\s*/,'').replace(/\*\*/g,'').trim();
+      if(!titleTxt)return;
       if(inOl){html+='</ol>';inOl=false;}
       if(inUl){html+='</ul>';inUl=false;}
-      html+='<h3>'+escHTML(t.slice(4))+'</h3>';
+      html+='<h3>'+escHTML(titleTxt)+'</h3>';
       return;
     }
     var imgM=t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
@@ -582,7 +584,13 @@ function editorToMarkdown(){
     var tag=node.tagName.toLowerCase();
     var inner=Array.from(node.childNodes).map(nodeToMd).join('');
 
-    if(tag==='h3')return '\n### '+inner.trim()+'\n';
+    if(tag==='h3'){
+      var inner3=inner.trim();
+      // Sacar asteriscos dobles dentro del título (porque h3 ya es bold)
+      inner3=inner3.replace(/\*\*/g,'');
+      if(!inner3)return '';
+      return '\n### '+inner3+'\n';
+    }
     if(tag==='strong'||tag==='b')return '**'+inner.trim()+'**';
     if(tag==='a'){var href=node.getAttribute('href')||'';return '['+inner.trim()+']('+href+')';}
     if(tag==='div'&&node.classList&&node.classList.contains('resp-inline')){
@@ -895,10 +903,19 @@ function renderContent(text){
   lines.forEach(function(line){
     var t=line.trim();
     if(!t){return;}
-    if(t.startsWith('### ')){
+    // Detectar **TEXTO MAYÚSCULAS** como título mal formateado
+    var fakeTitle=t.match(/^\*\*([^*]+)\*\*$/);
+    if(fakeTitle&&fakeTitle[1].length>3){
       if(inOl){html+='</ol>';inOl=false;}
       if(inUl){html+='</ul>';inUl=false;}
-      html+='<h3>'+esc(t.slice(4))+'</h3>';return;
+      html+='<h3>'+esc(fakeTitle[1].trim())+'</h3>';return;
+    }
+    if(t.startsWith('###')){
+      var titleText=t.replace(/^#+\s*/,'').replace(/\*\*/g,'').trim();
+      if(!titleText)return;
+      if(inOl){html+='</ol>';inOl=false;}
+      if(inUl){html+='</ul>';inUl=false;}
+      html+='<h3>'+esc(titleText)+'</h3>';return;
     }
     var imgM=t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
     if(imgM){
