@@ -1961,16 +1961,15 @@ function initEditorListeners(){
     }
   });
   ed.addEventListener('click',function(e){
-    // Si hace clic justo abajo de un bloque respuesta, ir al párrafo siguiente
-    if(e.target===ed){
-      var blocks=ed.querySelectorAll('.resp-inline');
+    // Si hace clic abajo del último bloque alert/resp, crear o ir a párrafo nuevo
+    if(e.target===ed||e.target.tagName==='P'&&!e.target.textContent.trim()){
+      var blocks=ed.querySelectorAll('.resp-inline, .alert-inline');
       var lastBlock=blocks[blocks.length-1];
       if(lastBlock){
         var rect=lastBlock.getBoundingClientRect();
-        if(e.clientY>rect.bottom){
-          // Crear un párrafo nuevo al final si no existe
+        if(e.clientY>rect.bottom-10){
           var lastChild=ed.lastElementChild;
-          if(!lastChild||lastChild.tagName!=='P'){
+          if(!lastChild||(lastChild.tagName!=='P')){
             var p=document.createElement('p');
             p.innerHTML='<br>';
             ed.appendChild(p);
@@ -1983,6 +1982,7 @@ function initEditorListeners(){
           sel.removeAllRanges();
           sel.addRange(range);
           ed.focus();
+          saveSelection();
         }
       }
     }
@@ -1990,9 +1990,15 @@ function initEditorListeners(){
   ed.addEventListener('keydown',function(e){
     if(e.key==='Enter'&&!e.shiftKey){
       var sel=window.getSelection();
+      // Si estamos dentro de un alert-content o resp-content, hacer salto simple
       if(sel&&sel.anchorNode){
         var node=sel.anchorNode;
         while(node&&node!==ed){
+          if(node.classList&&(node.classList.contains('alert-content')||node.classList.contains('resp-content'))){
+            e.preventDefault();
+            document.execCommand('insertHTML',false,'<br>');
+            return;
+          }
           if(node.nodeName==='LI'||node.nodeName==='OL'||node.nodeName==='UL'){
             return;
           }
