@@ -108,6 +108,8 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
 .art-toc a.active{background:#D7ECFE;color:#001533;font-weight:600;border-left-color:#001533}
 .back-top{position:fixed;bottom:28px;right:28px;background:#001533;color:#fff;border:none;border-radius:50px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);display:none;z-index:99;transition:opacity .2s}
 .back-top.on{display:block}
+.welcome-item:hover{background:rgba(0,98,222,.15) !important;padding-left:32px !important}
+.welcome-item:hover span:last-child{transform:translateX(4px);color:#0062DE !important}
 .acard{background:#fff;border:1px solid #e8edf5;border-radius:var(--r);overflow:hidden;flex:1;min-width:0}
 .ahead{padding:24px 28px;border-bottom:1px solid #e8edf5}
 .ahead-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
@@ -255,21 +257,83 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
 <div id="view-app" style="display:none">
 
 <nav>
-  <div class="nav-brand" onclick="goHome()">
+  <div class="nav-brand" onclick="goWelcome()">
     <span style="font-size:18px;font-weight:800;color:#fff;letter-spacing:1px">cocos</span>
-    <span class="nav-lbl">CX Hub</span>
+    <span class="nav-lbl">Espacio CX</span>
   </div>
   <div class="nav-right">
     <span class="nav-user" id="nav-user"></span>
     <span id="sync-status" style="font-size:11px;color:rgba(255,255,255,.5);margin-right:4px"></span>
-    <button class="nbtn on" id="nav-kb" onclick="goHome()">Inicio</button>
-    <button class="nbtn notif-btn" id="nav-notif" onclick="goNotif()">🔔<span class="notif-badge" id="notif-badge"></span></button>
+    <button class="nbtn" id="nav-welcome" onclick="goWelcome()">Inicio</button>
+    <button class="nbtn on" id="nav-kb" onclick="goHome()" style="display:none">Base</button>
+    <button class="nbtn notif-btn" id="nav-notif" onclick="goNotif()" style="display:none">🔔<span class="notif-badge" id="notif-badge"></span></button>
     <button class="nbtn" id="nav-adm" onclick="goAdmin()" style="display:none">Admin</button>
     <button class="nbtn" onclick="doLogout()" style="border-color:rgba(255,255,255,.2)">Salir</button>
   </div>
 </nav>
 
-<div id="view-home" class="view active">
+<div id="view-welcome" class="view active">
+  <div style="min-height:calc(100vh - 58px);display:flex;align-items:center;justify-content:center;background:#001533;padding:40px 24px">
+    <div style="max-width:560px;width:100%;text-align:center;color:#fff">
+      <h1 style="font-size:38px;font-weight:700;margin-bottom:16px;line-height:1.15">Bienvenido al <span style="color:#0062DE">Espacio CX</span></h1>
+      <p style="font-size:16px;color:rgba(255,255,255,.6);margin-bottom:48px;font-weight:400">¿Qué querés hacer?</p>
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;text-align:left">
+        <div class="welcome-item" onclick="goHome()" style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;color:#fff;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.08);transition:all .2s;font-weight:500">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:28px;height:28px;background:#0062DE;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">1</div>
+            <div>
+              <div style="font-size:15px">Base de conocimiento</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">Procesos, artículos y respuestas tipo</div>
+            </div>
+          </div>
+          <span style="color:rgba(255,255,255,.3);font-size:20px">→</span>
+        </div>
+        <div class="welcome-item" onclick="alert('Próximamente')" style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;color:#fff;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.08);transition:all .2s;font-weight:500;opacity:.5">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:28px;height:28px;background:#0062DE;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">2</div>
+            <div>
+              <div style="font-size:15px">Bitácora</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">Próximamente</div>
+            </div>
+          </div>
+          <span style="color:rgba(255,255,255,.3);font-size:20px">→</span>
+        </div>
+        <div class="welcome-item" onclick="alert('Próximamente')" style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;color:#fff;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.08);transition:all .2s;font-weight:500;opacity:.5">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:28px;height:28px;background:#0062DE;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">3</div>
+            <div>
+              <div style="font-size:15px">Macros</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">Próximamente</div>
+            </div>
+          </div>
+          <span style="color:rgba(255,255,255,.3);font-size:20px">→</span>
+        </div>
+        <div class="welcome-item" onclick="alert('Próximamente')" style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;color:#fff;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.08);transition:all .2s;font-weight:500;opacity:.5">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:28px;height:28px;background:#0062DE;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">4</div>
+            <div>
+              <div style="font-size:15px">Organización</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">Próximamente</div>
+            </div>
+          </div>
+          <span style="color:rgba(255,255,255,.3);font-size:20px">→</span>
+        </div>
+        <div class="welcome-item" onclick="alert('Próximamente')" style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;color:#fff;cursor:pointer;transition:all .2s;font-weight:500;opacity:.5">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:28px;height:28px;background:#0062DE;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">5</div>
+            <div>
+              <div style="font-size:15px">Quiz</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">Próximamente</div>
+            </div>
+          </div>
+          <span style="color:rgba(255,255,255,.3);font-size:20px">→</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="view-home" class="view">
   <div class="hero">
     <div class="hero-pat"><svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="p" x="0" y="0" width="36" height="22" patternUnits="userSpaceOnUse"><text x="2" y="17" font-size="13" font-weight="900" fill="#fff" opacity="0.07">CX</text></pattern></defs><rect width="100%" height="100%" fill="url(#p)"/></svg></div>
     <div class="hero-bg">
@@ -455,10 +519,11 @@ function markdownToHTML(text){
     // Bloque respuesta sugerida
     var respM=t.match(/^>>>(.+)<<<$/);
     if(respM){
-      var rt=respM[1].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      html+='<div class="resp-inline" data-resp="'+rt.replace(/"/g,'&quot;')+'" contenteditable="false" style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:12px 16px;margin:12px 0">'+
-        '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px">💬 Respuesta sugerida</div>'+
-        '<div style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6">'+rt+'</div>'+
+      var rtRaw=respM[1].replace(/§§/g,'\n');
+      var rt=rtRaw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      html+='<div class="resp-inline" data-resp="'+rt.replace(/"/g,'&quot;').replace(/\n/g,'&#10;')+'" contenteditable="false" ondblclick="editRespBlock(this)" style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:12px 16px;margin:12px 0;cursor:pointer">'+
+        '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">💬 Respuesta sugerida <span style="display:flex;gap:8px;align-items:center"><span style="font-size:9px;color:#0062DE;font-weight:600;opacity:.7">✏ Doble clic</span><button type="button" onclick="this.closest(\'.resp-inline\').remove()" title="Eliminar" style="background:#fee;color:#dc2626;border:1px solid #fcc;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer">✕</button></span></div>'+
+        '<div class="resp-content" contenteditable="true" style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6;outline:none" oninput="this.parentNode.setAttribute(\'data-resp\',this.innerText)">'+rt+'</div>'+
         '</div>';
       return;
     }
@@ -522,8 +587,12 @@ function editorToMarkdown(){
     if(tag==='strong'||tag==='b')return '**'+inner.trim()+'**';
     if(tag==='a'){var href=node.getAttribute('href')||'';return '['+inner.trim()+']('+href+')';}
     if(tag==='div'&&node.classList&&node.classList.contains('resp-inline')){
-      var respText=node.getAttribute('data-resp')||inner.trim();
-      return '\n>>>'+respText+'<<<\n';
+      var contentEl=node.querySelector('.resp-content');
+      var respText=contentEl?contentEl.innerText.trim():(node.getAttribute('data-resp')||'');
+      if(!respText)return '';
+      // Codificar saltos de línea para que quepan en una sola línea
+      var encoded=respText.replace(/\n/g,'§§');
+      return '\n>>>'+encoded+'<<<\n';
     }
     if(tag==='br')return '\n';
     if(tag==='img'){var src=node.getAttribute('src')||'';var alt=node.getAttribute('alt')||'';return '\n!['+alt+']('+src+')\n';}
@@ -545,6 +614,10 @@ function editorToMarkdown(){
   }
 
   result=Array.from(el.childNodes).map(nodeToMd).join('');
+  // Limpiar negritas con espacios extra que dejan asteriscos sueltos
+  result=result.replace(/\*\*\s+/g,'**').replace(/\s+\*\*/g,'**');
+  // Limpiar asteriscos vacíos
+  result=result.replace(/\*\*\*\*/g,'');
   return result.replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'').trim();
 }
 
@@ -582,16 +655,27 @@ function edInsertLink(){
 }
 
 function edInsertResp(){
-  var texto=prompt('Escribí la respuesta sugerida:');
-  if(!texto)return;
   document.getElementById('ed-content').focus();
   var id='resp-'+Date.now();
   document.execCommand('insertHTML',false,
-    '<div class="resp-inline" data-resp="'+texto.replace(/"/g,'&quot;')+'" contenteditable="false" style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:12px 16px;margin:12px 0;position:relative">'+
-    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px">💬 Respuesta sugerida</div>'+
-    '<div style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6">'+texto.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>'+
+    '<div class="resp-inline" data-resp="" contenteditable="false" ondblclick="editRespBlock(this)" style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:12px 16px;margin:12px 0;cursor:pointer;position:relative">'+
+    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">💬 Respuesta sugerida <span style="display:flex;gap:8px;align-items:center"><span style="font-size:9px;color:#0062DE;font-weight:600;opacity:.7">✏ Doble clic</span><button type="button" onclick="this.closest(\'.resp-inline\').remove()" title="Eliminar" style="background:#fee;color:#dc2626;border:1px solid #fcc;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer">✕</button></span></div>'+
+    '<div class="resp-content" contenteditable="true" style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6;outline:none;min-height:20px" data-placeholder="Escribí la respuesta sugerida acá..." oninput="this.parentNode.setAttribute(\'data-resp\',this.textContent)"></div>'+
     '</div><p></p>'
   );
+  setTimeout(function(){
+    var blocks=document.querySelectorAll('.resp-inline');
+    var last=blocks[blocks.length-1];
+    if(last){
+      var content=last.querySelector('.resp-content');
+      if(content)content.focus();
+    }
+  },50);
+}
+
+function editRespBlock(block){
+  var content=block.querySelector('.resp-content');
+  if(content){content.focus();}
 }
 
 // ─── GOOGLE SHEETS API ──────────────────────────────────
@@ -776,14 +860,21 @@ function startApp(user){
   document.getElementById('btn-edit').style.display=user.role==='admin'?'':'none';
   loadFromSheet(function(){
     renderHome();
-    showView('home');
+    goWelcome();
     updateNotifBadge();
   });
 }
 
+function goWelcome(){
+  showView('welcome');
+  document.getElementById('nav-kb').style.display='none';
+  document.getElementById('nav-notif').style.display='none';
+  document.getElementById('nav-welcome').classList.add('on');
+}
+
 // ─── CONTENT ────────────────────────────────────────────
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function fmt(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" style="color:#001533;text-decoration:underline">$1</a>');}
+function fmt(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*\*/g,'').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" style="color:#001533;text-decoration:underline">$1</a>');}
 function renderContent(text){
   if(!text)return '';
   var lines=text.split('\n'),html='',inOl=false,inUl=false;
@@ -808,8 +899,9 @@ function renderContent(text){
       if(inOl){html+='</ol>';inOl=false;}
       if(inUl){html+='</ul>';inUl=false;}
       var rid='rcp-'+Math.random().toString(36).slice(2,8);
-      var rt=esc(respM[1]);
-      var rtRaw=respM[1].replace(/'/g,"\\'");
+      var rtRawDecoded=respM[1].replace(/§§/g,'\n');
+      var rt=esc(rtRawDecoded);
+      var rtRaw=rtRawDecoded.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
       html+='<div style="background:#f0f6ff;border:1.5px solid #0062DE;border-radius:8px;padding:14px 16px;margin:14px 0">'+
         '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0062DE;margin-bottom:8px">\ud83d\udcac Respuesta sugerida</div>'+
         '<div style="font-size:13px;color:#001533;white-space:pre-wrap;line-height:1.6;margin-bottom:10px">'+rt+'</div>'+
@@ -856,7 +948,13 @@ function showView(id){
   document.getElementById('nav-adm').classList.toggle('on',id==='admin');
   document.getElementById('nav-notif').classList.toggle('on',id==='notif');
 }
-function goHome(){renderHome();showView('home');}
+function goHome(){
+  renderHome();
+  showView('home');
+  document.getElementById('nav-kb').style.display='';
+  document.getElementById('nav-notif').style.display='';
+  document.getElementById('nav-welcome').classList.remove('on');
+}
 function goAdmin(){if(currentUser&&currentUser.role==='admin'){renderAdminList();showView('admin');}}
 function goBack(){if(curCat)showCat(curCat);}
 function editCurrentArt(){if(currentUser&&currentUser.role==='admin'&&curCat&&curArtId){renderAdminList();editArt(curCat,curArtId);}}
@@ -1629,6 +1727,17 @@ function initEditorListeners(){
   ed._listenersSet=true;
   ed.addEventListener('keydown',function(e){
     if(e.key==='Enter'&&!e.shiftKey){
+      // No interceptar Enter dentro de listas — dejar que el browser maneje
+      var sel=window.getSelection();
+      if(sel&&sel.anchorNode){
+        var node=sel.anchorNode;
+        while(node&&node!==ed){
+          if(node.nodeName==='LI'||node.nodeName==='OL'||node.nodeName==='UL'){
+            return; // dejar comportamiento nativo dentro de listas
+          }
+          node=node.parentNode;
+        }
+      }
       e.preventDefault();
       document.execCommand('insertParagraph',false,null);
     }
