@@ -514,6 +514,11 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
 // Convierte markdown a HTML para mostrar en el editor visual
 function markdownToHTML(text){
   if(!text)return '';
+  // Limpiar contenido corrupto antes de procesar
+  // Asegurar salto antes de ### que no esté al inicio de línea
+  text=text.replace(/([^\n])(###\s)/g,'$1\n$2');
+  // Asegurar espacio después de ### si está pegado a texto
+  text=text.replace(/###([^\s#\n])/g,'### $1');
   var lines=text.split('\n'),html='',inOl=false,inUl=false;
   lines.forEach(function(line){
     var t=line.trim();
@@ -622,8 +627,13 @@ function editorToMarkdown(){
       var contentEl=node.querySelector('.resp-content');
       var respHTML=contentEl?contentEl.innerHTML.trim():(node.getAttribute('data-resp')||'');
       if(!respHTML)return '';
-      // Codificar saltos de línea y comillas para que quepan en una sola línea
-      var encoded=respHTML.replace(/\n/g,'').replace(/§§/g,'').replace(/<br>/g,'§§').replace(/<br\/>/g,'§§').replace(/<br \/>/g,'§§');
+      // Limpiar tags div/p y convertirlos en saltos de línea
+      respHTML=respHTML.replace(/<\/(div|p)>/g,'<br>').replace(/<(div|p)[^>]*>/g,'');
+      // Eliminar >>> o <<< que pudo haber escrito por error el usuario
+      respHTML=respHTML.replace(/>>>/g,'').replace(/<<</g,'');
+      var encoded=respHTML.replace(/\n/g,'').replace(/<br>/g,'§§').replace(/<br\/>/g,'§§').replace(/<br \/>/g,'§§');
+      encoded=encoded.replace(/(§§)+/g,'§§').replace(/§§$/,'');
+      if(!encoded.trim())return '';
       return '\n>>>'+encoded+'<<<\n';
     }
     if(tag==='div'&&node.classList&&node.classList.contains('alert-inline')){
@@ -631,7 +641,14 @@ function editorToMarkdown(){
       var alertHTML=alertContentEl?alertContentEl.innerHTML.trim():'';
       var alertType=node.getAttribute('data-alert-type')||'warning';
       if(!alertHTML)return '';
+      // Limpiar tags div/p del contenido y convertirlos en saltos de línea
+      alertHTML=alertHTML.replace(/<\/(div|p)>/g,'<br>').replace(/<(div|p)[^>]*>/g,'');
+      // Eliminar @@@ que pudo haber escrito por error el usuario
+      alertHTML=alertHTML.replace(/@@@/g,'');
       var aEncoded=alertHTML.replace(/\n/g,'').replace(/<br>/g,'§§').replace(/<br\/>/g,'§§').replace(/<br \/>/g,'§§');
+      // Sacar §§ duplicados o al final
+      aEncoded=aEncoded.replace(/(§§)+/g,'§§').replace(/§§$/,'');
+      if(!aEncoded.trim())return '';
       return '\n@@@'+alertType+'|'+aEncoded+'@@@\n';
     }
     if(tag==='br')return '\n';
@@ -678,16 +695,36 @@ function restoreSelection(){
     sel.addRange(_savedRange);
   }
 }
+function getActiveEditable(){
+  // Devuelve el elemento contenteditable activo (ed-content o un bloque interno)
+  if(!_savedRange)return document.getElementById('ed-content');
+  var node=_savedRange.startContainer;
+  while(node){
+    if(node.nodeType===1&&node.getAttribute&&node.getAttribute('contenteditable')==='true'){
+      return node;
+    }
+    node=node.parentNode;
+  }
+  return document.getElementById('ed-content');
+}
+
 function edCmd(cmd,val){
   restoreSelection();
-  document.getElementById('ed-content').focus();
+  var target=getActiveEditable();
+  target.focus();
   document.execCommand(cmd,false,val||null);
   saveSelection();
+  // Sincronizar data-resp/alert si estamos en un bloque
+  var parentBlock=target.closest('.resp-inline');
+  if(parentBlock&&target.classList.contains('resp-content')){
+    parentBlock.setAttribute('data-resp',target.innerHTML);
+  }
 }
 
 function edInsertList(type){
   restoreSelection();
-  document.getElementById('ed-content').focus();
+  var target=getActiveEditable();
+  target.focus();
   document.execCommand(type==='ol'?'insertOrderedList':'insertUnorderedList',false,null);
   saveSelection();
 }
@@ -711,8 +748,15 @@ function edInsertLink(){
   if(!url)return;
   var text=prompt('Texto a mostrar (dejá vacío para mostrar la URL):');
   if(!text)text=url;
-  document.getElementById('ed-content').focus();
+  restoreSelection();
+  var target=getActiveEditable();
+  target.focus();
   document.execCommand('insertHTML',false,'<a href="'+url+'" target="_blank" style="color:#001533;text-decoration:underline">'+text+'</a>');
+  saveSelection();
+  var parentBlock=target.closest('.resp-inline');
+  if(parentBlock&&target.classList.contains('resp-content')){
+    parentBlock.setAttribute('data-resp',target.innerHTML);
+  }
 }
 
 function edInsertAlert(){
@@ -981,14 +1025,21 @@ function renderContent(text){
   text=text.replace(/([^\n])(### )/g,'$1\n$2');
   // Separar ### pegados a texto sin espacio después
   text=text.replace(/###([^\s#])/g,'### $1');
-  // Detectar bloques >>> ... <<< con saltos rotos en el medio y unirlos
+  // Limpiar bloques alert/resp con tags rotos en el medio
+  text=text.replace(/@@@(warning|info|important)\|([\s\S]+?)@@@/g,function(m,type,inner){
+    // Limpiar tags HTML que rompen el bloque
+    inner=inner.replace(/<\/(div|p)>/g,'§§').replace(/<(div|p)[^>]*>/g,'');
+    inner=inner.replace(/\n/g,'§§').replace(/(§§)+/g,'§§').replace(/§§$/,'');
+    return '\n@@@'+type+'|'+inner+'@@@\n';
+  });
   text=text.replace(/>>>([\s\S]+?)<<</g,function(m,inner){
+    inner=inner.replace(/<\/(div|p)>/g,'§§').replace(/<(div|p)[^>]*>/g,'');
     return '\n>>>'+inner.replace(/\n/g,'§§').replace(/§§§+/g,'§§')+'<<<\n';
   });
   // §§ sueltos fuera de bloques se convierten en saltos de línea
-  var parts=text.split(/(>>>[\s\S]+?<<<)/);
+  var parts=text.split(/(>>>[\s\S]+?<<<|@@@(?:warning|info|important)\|[\s\S]+?@@@)/);
   text=parts.map(function(p){
-    if(p.startsWith('>>>'))return p;
+    if(p.startsWith('>>>')||p.startsWith('@@@'))return p;
     return p.replace(/§§/g,'\n');
   }).join('');
   var lines=text.split('\n'),html='',inOl=false,inUl=false;
@@ -1895,9 +1946,20 @@ function initEditorListeners(){
   var ed=document.getElementById('ed-content');
   if(!ed||ed._listenersSet)return;
   ed._listenersSet=true;
-  // Guardar la selección cuando cambia
+  // Guardar la selección cuando cambia (en cualquier parte del editor o sub-bloques)
   ed.addEventListener('mouseup',saveSelection);
   ed.addEventListener('keyup',saveSelection);
+  // También capturar focus/cambios dentro de bloques contenteditable internos
+  document.addEventListener('selectionchange',function(){
+    var sel=window.getSelection();
+    if(sel.rangeCount>0){
+      var node=sel.anchorNode;
+      while(node){
+        if(node===ed)return saveSelection();
+        node=node.parentNode;
+      }
+    }
+  });
   ed.addEventListener('click',function(e){
     // Si hace clic justo abajo de un bloque respuesta, ir al párrafo siguiente
     if(e.target===ed){
