@@ -479,6 +479,7 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
         <button type="button" onmousedown="event.preventDefault()" onclick="edInsertList('ul')" title="Lista con viñetas">—</button>
         <button type="button" onmousedown="event.preventDefault()" onclick="edInsertImg()" title="Imagen">🖼</button>
         <button type="button" onmousedown="event.preventDefault()" onclick="edInsertLink()" title="Link">🔗</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="edInsertParagraph()" title="Nuevo párrafo">↵</button>
         <button type="button" onmousedown="event.preventDefault()" onclick="edInsertResp()" title="Respuesta sugerida" style="background:#D7ECFE;border-color:#0062DE;color:#002C65">💬 Respuesta</button>
         <button type="button" onmousedown="event.preventDefault()" onclick="edInsertAlert()" title="Alerta/Aviso" style="background:#fef3c7;border-color:#f59e0b;color:#92400e">⚠️ Alerta</button>
       </div>
@@ -757,6 +758,14 @@ function edInsertLink(){
   if(parentBlock&&target.classList.contains('resp-content')){
     parentBlock.setAttribute('data-resp',target.innerHTML);
   }
+}
+
+function edInsertParagraph(){
+  restoreSelection();
+  var target=getActiveEditable();
+  target.focus();
+  document.execCommand('insertHTML',false,'<p><br></p>');
+  saveSelection();
 }
 
 function edInsertAlert(){
@@ -1990,7 +1999,6 @@ function initEditorListeners(){
   ed.addEventListener('keydown',function(e){
     if(e.key==='Enter'&&!e.shiftKey){
       var sel=window.getSelection();
-      // Si estamos dentro de un alert-content o resp-content, hacer salto simple
       if(sel&&sel.anchorNode){
         var node=sel.anchorNode;
         while(node&&node!==ed){
@@ -2007,6 +2015,7 @@ function initEditorListeners(){
       }
       e.preventDefault();
       document.execCommand('insertParagraph',false,null);
+      saveSelection();
     }
   });
   ed.addEventListener('paste',function(e){
