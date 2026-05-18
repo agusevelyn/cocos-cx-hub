@@ -666,7 +666,7 @@ function editorToMarkdown(){
     if(tag==='p'||tag==='div'){
       var t=inner.trim();
       if(!t||t==='\n')return '';
-      return t+'\n';
+      return t+'\n\n';
     }
     return inner;
   }
@@ -762,9 +762,35 @@ function edInsertLink(){
 
 function edInsertParagraph(){
   restoreSelection();
-  var target=getActiveEditable();
-  target.focus();
-  document.execCommand('insertHTML',false,'<p><br></p>');
+  var ed=document.getElementById('ed-content');
+  ed.focus();
+  var sel=window.getSelection();
+  if(!sel.rangeCount)return;
+  // Crear el nuevo párrafo manualmente
+  var p=document.createElement('p');
+  p.innerHTML='<br>';
+  // Encontrar el bloque padre (h3, p, div) donde está el cursor
+  var range=sel.getRangeAt(0);
+  var node=range.startContainer;
+  while(node&&node.parentNode!==ed){
+    node=node.parentNode;
+  }
+  if(node&&node.parentNode===ed){
+    // Insertar después del bloque actual
+    if(node.nextSibling){
+      ed.insertBefore(p,node.nextSibling);
+    } else {
+      ed.appendChild(p);
+    }
+  } else {
+    ed.appendChild(p);
+  }
+  // Mover cursor al nuevo párrafo
+  var newRange=document.createRange();
+  newRange.selectNodeContents(p);
+  newRange.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(newRange);
   saveSelection();
 }
 
@@ -952,7 +978,53 @@ var SESSION_KEY='cx_session';
 function getUsers(){
   try{var u=localStorage.getItem(USERS_KEY);return u?JSON.parse(u):[];}catch(e){return [];}
 }
-function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
+function saveUsers(u){
+  localStorage.setItem(USERS_KEY,JSON.stringify(u));
+  saveUsersToSheet(u);
+}
+
+function loadUsersFromSheet(callback){
+  var cbName='_usersCb_'+Date.now();
+  var script=document.createElement('script');
+  var done=false;
+  var timeout=setTimeout(function(){
+    if(done)return;
+    done=true;
+    delete window[cbName];
+    if(script.parentNode)script.parentNode.removeChild(script);
+    if(callback)callback();
+  },5000);
+  window[cbName]=function(rows){
+    done=true;
+    clearTimeout(timeout);
+    delete window[cbName];
+    if(script.parentNode)script.parentNode.removeChild(script);
+    if(rows&&rows.length>0){
+      localStorage.setItem(USERS_KEY,JSON.stringify(rows));
+      console.log('Usuarios cargados desde Sheet:',rows.length);
+    }
+    if(callback)callback();
+  };
+  script.onerror=function(){
+    if(done)return;
+    done=true;
+    clearTimeout(timeout);
+    delete window[cbName];
+    if(callback)callback();
+  };
+  script.src=SCRIPT_URL+'?action=getUsers&callback='+cbName;
+  document.head.appendChild(script);
+}
+
+function saveUsersToSheet(users){
+  var payload={action:'saveUsers',rows:users};
+  fetch(SCRIPT_URL,{
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify(payload)
+  }).catch(function(e){console.log('Error guardando usuarios:',e);});
+}
 function getSession(){
   try{var s=localStorage.getItem(SESSION_KEY);return s?JSON.parse(s):null;}catch(e){return null;}
 }
@@ -2028,12 +2100,14 @@ function initEditorListeners(){
 }
 
 // ─── INIT ────────────────────────────────────────────────
-initUsers();
-var session=getSession();
-if(session){
-  currentUser=session;
-  startApp(session);
-}
+loadUsersFromSheet(function(){
+  initUsers();
+  var session=getSession();
+  if(session){
+    currentUser=session;
+    startApp(session);
+  }
+});
 </script>
 </body>
 </html>
