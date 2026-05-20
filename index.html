@@ -268,6 +268,7 @@ nav{background:#001533;border-bottom:1px solid #002C65;padding:0 28px;display:fl
     <button class="nbtn on" id="nav-kb" onclick="goHome()" style="display:none">Base</button>
     <button class="nbtn notif-btn" id="nav-notif" onclick="goNotif()" style="display:none">🔔<span class="notif-badge" id="notif-badge"></span></button>
     <button class="nbtn" id="nav-adm" onclick="goAdmin()" style="display:none">Admin</button>
+    <button class="nbtn" onclick="changeMyPass()" style="border-color:rgba(255,255,255,.2)" title="Cambiar contraseña">🔑</button>
     <button class="nbtn" onclick="doLogout()" style="border-color:rgba(255,255,255,.2)">Salir</button>
   </div>
 </nav>
@@ -980,7 +981,6 @@ function getUsers(){
 }
 function saveUsers(u){
   localStorage.setItem(USERS_KEY,JSON.stringify(u));
-  saveUsersToSheet(u);
 }
 
 function loadUsersFromSheet(callback){
@@ -1000,8 +1000,14 @@ function loadUsersFromSheet(callback){
     delete window[cbName];
     if(script.parentNode)script.parentNode.removeChild(script);
     if(rows&&rows.length>0){
-      localStorage.setItem(USERS_KEY,JSON.stringify(rows));
-      console.log('Usuarios cargados desde Sheet:',rows.length);
+      // Filtrar usuarios válidos (deben tener mail y pass)
+      var valid=rows.filter(function(u){return u&&u.mail&&u.pass;});
+      if(valid.length>0){
+        localStorage.setItem(USERS_KEY,JSON.stringify(valid));
+        console.log('Usuarios cargados desde Sheet:',valid.length);
+      } else {
+        console.log('No hay usuarios válidos en la Sheet');
+      }
     }
     if(callback)callback();
   };
@@ -1033,10 +1039,33 @@ function clearSession(){localStorage.removeItem(SESSION_KEY);}
 
 var DEFAULT_ADMIN={id:'u1',name:'Admin',mail:'admin@cocos.capital',pass:'cocos2025',role:'admin'};
 
+var TEAM_USERS=[
+  {id:'u_aalburquerque',name:'Andrea Alburquerque',mail:'alburquerque@cocos.capital',pass:'Cocos2025',role:'admin'},
+  {id:'u_abenitez',name:'Agustina Benítez',mail:'abenitez@cocos.capital',pass:'Cocos2025',role:'admin'},
+  {id:'u_aiedrososa',name:'Agustina Iedro Sosa',mail:'aiedrososa@cocos.capital',pass:'Cocos2025',role:'user'},
+  {id:'u_mvita',name:'Milagros Vita',mail:'mvita@cocos.capital',pass:'Cocos2025',role:'admin'},
+  {id:'u_jriquelme',name:'Juan Manuel Riquelme',mail:'jriquelme@cocos.capital',pass:'Cocos2025',role:'user'},
+  {id:'u_mirdiaz',name:'Miriam Diaz',mail:'mirdiaz@cocos.capital',pass:'Cocos2025',role:'user'},
+  {id:'u_dforquera',name:'Denise Elizabeth Forquera',mail:'dforquera@cocos.capital',pass:'Cocos2025',role:'admin'},
+  {id:'u_bgrillo',name:'Bianca Grillo',mail:'bgrillo@cocos.capital',pass:'Cocos2025',role:'user'},
+  {id:'u_onalli',name:'Ornella Nalli',mail:'onalli@cocos.capital',pass:'Cocos2025',role:'user'},
+  {id:'u_fboscoscuro',name:'Franco Boscoscuro',mail:'fboscoscuro@cocos.capital',pass:'Cocos2025',role:'user'},
+  {id:'u_vcolman',name:'Valentin Colman',mail:'vcolman@cocos.capital',pass:'Cocos2025',role:'admin'},
+  {id:'u_lgutierrez',name:'León Gutiérrez',mail:'lgutierrez@cocos.capital',pass:'Cocos2025',role:'user'},
+  {id:'u_csimoncelli',name:'Camila Simoncelli',mail:'csimoncelli@cocos.capital',pass:'Cocos2025',role:'user'}
+];
+
 function initUsers(){
   var users=getUsers();
+  // Asegurar admin por defecto
   var hasAdmin=users.find(function(u){return u.id==='u1';});
-  if(!hasAdmin){users.unshift(DEFAULT_ADMIN);saveUsers(users);}
+  if(!hasAdmin){users.unshift(DEFAULT_ADMIN);}
+  // Asegurar usuarios del equipo
+  TEAM_USERS.forEach(function(tu){
+    var exists=users.find(function(u){return u.id===tu.id||(u.mail&&u.mail.toLowerCase()===tu.mail.toLowerCase());});
+    if(!exists){users.push(tu);}
+  });
+  saveUsers(users);
 }
 
 async function hashPass(pw){
@@ -1052,18 +1081,35 @@ async function doLogin(){
   var mail=document.getElementById('login-mail').value.trim().toLowerCase();
   var pass=document.getElementById('login-pass').value;
   var users=getUsers();
+  // Filtrar usuarios sin mail (datos corruptos)
+  users=users.filter(function(u){return u&&u.mail;});
   // Primero intentar con texto plano (compatibilidad)
-  var user=users.find(function(u){return u.mail.toLowerCase()===mail&&u.pass===pass;});
+  var user=users.find(function(u){return String(u.mail).toLowerCase()===mail&&u.pass===pass;});
   if(!user){
     // Intentar con hash
     try{
       var hashed=await hashPass(pass);
-      user=users.find(function(u){return u.mail.toLowerCase()===mail&&u.pass===hashed;});
+      user=users.find(function(u){return String(u.mail).toLowerCase()===mail&&u.pass===hashed;});
     }catch(e){}
   }
   if(!user){document.getElementById('login-err').style.display='block';return;}
   setSession({id:user.id,name:user.name,mail:user.mail,role:user.role});
   startApp(user);
+}
+
+function changeMyPass(){
+  if(!currentUser)return;
+  var newPass=prompt('Nueva contraseña (mínimo 6 caracteres):');
+  if(!newPass)return;
+  if(newPass.length<6){alert('La contraseña debe tener al menos 6 caracteres.');return;}
+  var confirm2=prompt('Confirmá la nueva contraseña:');
+  if(newPass!==confirm2){alert('Las contraseñas no coinciden.');return;}
+  var users=getUsers();
+  var idx=users.findIndex(function(u){return u.id===currentUser.id;});
+  if(idx<0){alert('Error: usuario no encontrado.');return;}
+  users[idx].pass=newPass;
+  saveUsers(users);
+  alert('✓ Contraseña actualizada. La próxima vez que ingreses, usá la nueva contraseña.');
 }
 
 function doLogout(){
@@ -2100,14 +2146,12 @@ function initEditorListeners(){
 }
 
 // ─── INIT ────────────────────────────────────────────────
-loadUsersFromSheet(function(){
-  initUsers();
-  var session=getSession();
-  if(session){
-    currentUser=session;
-    startApp(session);
-  }
-});
+initUsers();
+var session=getSession();
+if(session){
+  currentUser=session;
+  startApp(session);
+}
 </script>
 </body>
 </html>
